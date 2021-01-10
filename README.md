@@ -1,2 +1,2 @@
 # ldpos-postgres-dal
-Postgres Data Access Layer for LDPoS
+Postgres Data Access Layer for LDPoS.

@@ -52,6 +52,10 @@ class PostgresDAL {
 
   }
 
+  async getAccountsByBalance(order, offset, limit) {
+
+  }
+
   async getAccountVotes(voterAddress) {
 
   }
@@ -96,7 +100,11 @@ class PostgresDAL {
 
   }
 
-  async upsertTransaction(transaction) {
+  async getBlock(id) {
+
+  }
+
+  async getBlocksByTimestamp(order, offset, limit) {
 
   }
 
@@ -116,6 +124,14 @@ class PostgresDAL {
 
   }
 
+  async upsertTransaction(transaction) {
+
+  }
+
+  async getTransactionsByTimestamp(order, offset, limit) {
+
+  }
+
   async getTransactionsFromBlock(blockId, offset, limit) {
 
   }
@@ -132,7 +148,7 @@ class PostgresDAL {
 
   }
 
-  async getTopActiveDelegates(delegateCount) {
+  async getDelegatesByVoteWeight(order, offset, limit) {
 
   }
 }

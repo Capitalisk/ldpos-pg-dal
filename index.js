@@ -52,7 +52,7 @@ class PostgresDAL {
 
   }
 
-  async getAccountsByBalance(order, offset, limit) {
+  async getAccountsByBalance(offset, limit, order) {
 
   }
 
@@ -104,7 +104,7 @@ class PostgresDAL {
 
   }
 
-  async getBlocksByTimestamp(order, offset, limit) {
+  async getBlocksByTimestamp(offset, limit, order) {
 
   }
 
@@ -128,7 +128,7 @@ class PostgresDAL {
 
   }
 
-  async getTransactionsByTimestamp(order, offset, limit) {
+  async getTransactionsByTimestamp(offset, limit, order) {
 
   }
 
@@ -148,7 +148,7 @@ class PostgresDAL {
 
   }
 
-  async getDelegatesByVoteWeight(order, offset, limit) {
+  async getDelegatesByVoteWeight(offset, limit, order) {
 
   }
 }

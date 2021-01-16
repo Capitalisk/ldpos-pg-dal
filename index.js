@@ -136,7 +136,11 @@ class PostgresDAL {
 
   }
 
-  async getOutboundTransactions(walletAddress, fromTimestamp, limit) {
+  async getInboundTransactions(walletAddress, fromTimestamp, limit, order) {
+
+  }
+
+  async getOutboundTransactions(walletAddress, fromTimestamp, limit, order) {
 
   }
 

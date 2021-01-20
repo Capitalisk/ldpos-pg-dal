@@ -1,2 +1,2 @@
-# ldpos-postgres-dal
-Postgres Data Access Layer for LDPoS.
+# ldpos-knex-dal
+Knex Data Access Layer for LDPoS.

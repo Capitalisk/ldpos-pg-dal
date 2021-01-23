@@ -124,10 +124,6 @@ class PostgresDAL {
 
   }
 
-  async upsertTransaction(transaction) {
-
-  }
-
   async getTransactionsByTimestamp(offset, limit, order) {
 
   }

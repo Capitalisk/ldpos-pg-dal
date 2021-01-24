@@ -1,20 +1,21 @@
-const assert = require('assert');
-
+const dal = require("../../index")
+const genesis = require("../fixtures/genesis-functional")
 describe('Integration tests', async () => {
 
-    beforeEach(async () => {
+    let repository;
+    before(async () => {
+        repository = await new dal().init({ genesis });
+    });
+
+    it('should initialise genesis accounts', async () => {
 
     });
 
-    afterEach(async () => {
+    it('should initialise genesis blocks', async () => {
 
     });
 
-    describe('API call', async () => {
-
-        it('should ...', async () => {
-
-        });
+    it('should initialise genesis delegates', async () => {
 
     });
 

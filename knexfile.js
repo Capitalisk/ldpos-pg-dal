@@ -9,7 +9,8 @@ module.exports = {
       password : 'pgtest',
       database : 'neutral',
       port: '5454',
-      charset: 'utf8'
+      charset: 'utf8',
+      timezone: 'UTC',
     },
     pool: {
       min: 2,
@@ -31,7 +32,8 @@ module.exports = {
       password : '',
       database : 'neutral',
       port: '',
-      charset: 'utf8'
+      charset: 'utf8',
+      timezone: 'UTC',
     },
     pool: {
       min: 2,

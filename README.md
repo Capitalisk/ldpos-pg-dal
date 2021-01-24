@@ -7,7 +7,7 @@ Knex Data Access Layer for LDPoS.
 
 ## Starting postgres
 - Run ```docker-compose up db```
-- Type ```ctrl+c``` or ```docker-compose down``` to stop the server
+- Type ```ctrl+c```, ```docker-compose stop db```, ```docker-compose rm db```to stop & remove old db instance.
 
 ## Starting pgadmin
 - Run ```docker-compose up pgadmin```

@@ -3,7 +3,7 @@ Currently tables are being created in following order
 1. accounts
 2. transactions
 3. blocks
-4. votes
+4. ballots
 5. delegates
 6. multisig_memberships
 

@@ -9,14 +9,14 @@ class PostgresDAL {
 
     await Promise.all(
       accounts.map(async (accountInfo) => {
-        let { votes, ...accountWithoutVotes } = accountInfo;
+        let { ballots, ...accountWithoutBallots } = accountInfo;
         let account = {
-          ...accountWithoutVotes,
+          ...accountWithoutBallots,
           updateHeight: 0
         };
         await this.upsertAccount(account);
         await Promise.all(
-          votes.map((delegateAddress) => this.upsertVote(account.address, delegateAddress))
+          ballots.map((delegateAddress) => this.upsertVote(account.address, delegateAddress))
         );
       })
     );
@@ -56,7 +56,7 @@ class PostgresDAL {
 
   }
 
-  async getAccountVotes(voterAddress) {
+  async getAccountBallots(voterAddress) {
 
   }
 

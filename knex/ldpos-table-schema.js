@@ -51,12 +51,14 @@ module.exports = {
             synched: "synched"
         }
     },
-    votes : {
-        tableName: "votes",
+    ballots : {
+        tableName: "ballots",
         columns: {
+            id: "id", // matches transactionId
+            type: "type",
             voterAddress: "voterAddress",
             delegateAddress: "delegateAddress",
-            transactionId: "transactionId"
+            active: "active"
         }
     },
     delegates : {

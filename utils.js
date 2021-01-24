@@ -20,7 +20,7 @@ const isEmptyString = (stringToCheck, ignoreSpaces = true) => (ignoreSpaces ? st
 
 const isLocal = (env) => env === "development";
 
-export const run = (runnable, ...collection) => Promise.all(collection.map(runnable));
+const run = (runnable, ...collection) => Promise.all(collection.map(runnable));
 
 
 module.exports = { isNullOrUndefinedOrEmpty, firstOrDefault, isLocal, isNullOrUndefined, run}

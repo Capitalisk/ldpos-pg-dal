@@ -1,0 +1,25 @@
+version: 2.1
+
+executors:
+  node-executor:
+    docker:
+      - image: circleci/node:lts
+
+jobs:
+  build-lint-test:
+    executor: node-executor
+    working_directory: ~/repo
+    steps:
+      - checkout:
+          path: ~/repo
+      - run:
+          name: Test
+          command: |
+            set +e
+            yarn install
+            yarn test
+
+workflows:
+  test-and-deploy:
+    jobs:
+      - build-lint-test

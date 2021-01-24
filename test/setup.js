@@ -8,7 +8,7 @@ const delegatesData = require("./fixtures/delegates")
 const multisig_membershipsData = require("./fixtures/multisig_memberships")
 const ballotsData = require("./fixtures/ballots")
 
-export const fixture = (tableName, data) => ({
+const fixture = (tableName, data) => ({
     tableName,
     data,
 });

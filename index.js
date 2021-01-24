@@ -1,34 +1,65 @@
+const crypto = require('crypto');
+
 const DEFAULT_NETWORK_SYMBOL = 'ldpos';
 
 class PostgresDAL {
+  constructor() {
+    this.accounts = {};
+    this.delegates = {};
+    this.ballots = {};
+    this.blocks = [];
+    this.transactions = {};
+    this.multisigMembers = {};
+  }
+
   async init(options) {
-    let { genesis } = options;
-    let { accounts } = genesis;
+    let {genesis} = options;
+    let {accounts} = genesis;
     let multisigWalletList = genesis.multisigWallets || [];
     this.networkSymbol = genesis.networkSymbol || DEFAULT_NETWORK_SYMBOL;
 
     await Promise.all(
-      accounts.map(async (accountInfo) => {
-        let { ballots, ...accountWithoutBallots } = accountInfo;
-        let account = {
-          ...accountWithoutBallots,
-          updateHeight: 0
-        };
-        await this.upsertAccount(account);
-        await Promise.all(
-          ballots.map((delegateAddress) => this.upsertVote(account.address, delegateAddress))
-        );
-      })
+        accounts.map(async (accountInfo) => {
+          let {votes, ...accountWithoutVotes} = accountInfo;
+          let account = {
+            ...accountWithoutVotes,
+            updateHeight: 0
+          };
+          await this.upsertAccount(account);
+          if (account.forgingPublicKey) {
+            await this.upsertDelegate({
+              address: account.address,
+              voteWeight: '0'
+            });
+          }
+        })
     );
 
+    for (let accountInfo of accounts) {
+      let {votes} = accountInfo
+      for (let delegateAddress of votes) {
+        await this.vote({
+          id: crypto.randomBytes(32).toString('base64'),
+          voterAddress: accountInfo.address,
+          delegateAddress
+        });
+        let delegate = await this.getDelegate(delegateAddress);
+        let updatedVoteWeight = BigInt(delegate.voteWeight) + BigInt(accountInfo.balance);
+        await this.upsertDelegate({
+          address: delegateAddress,
+          voteWeight: updatedVoteWeight.toString()
+        });
+      }
+    }
+
     await Promise.all(
-      multisigWalletList.map(async (multisigWallet) => {
-        await this.registerMultisigWallet(
-          multisigWallet.address,
-          multisigWallet.members,
-          multisigWallet.requiredSignatureCount
-        );
-      })
+        multisigWalletList.map(async (multisigWallet) => {
+          await this.registerMultisigWallet(
+              multisigWallet.address,
+              multisigWallet.members,
+              multisigWallet.requiredSignatureCount
+          );
+        })
     );
   }
 
@@ -68,7 +99,7 @@ class PostgresDAL {
 
   }
 
-  async removeVote(voterAddress, delegateAddress) {
+  async vote(voterAddress, delegateAddress) {
 
   }
 
@@ -145,6 +176,14 @@ class PostgresDAL {
   }
 
   async getOutboundTransactionsFromBlock(walletAddress, blockId) {
+
+  }
+
+  async upsertDelegate(delegate) {
+
+  }
+
+  async getDelegate(walletAddress) {
 
   }
 

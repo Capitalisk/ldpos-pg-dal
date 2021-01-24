@@ -1,0 +1,11 @@
+Currently tables are being created in following order
+
+1. accounts
+2. transactions
+3. blocks
+4. votes
+5. delegates
+6. multisig_memberships
+
+Note - Need proper migration order in case of addition of foreign keys or interdependency of fields across tables
+       or adding or deleting columns from the table

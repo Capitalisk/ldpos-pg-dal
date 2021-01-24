@@ -1,6 +1,6 @@
 module.exports = {
     accounts : {
-        name: "accounts",
+        tableName: "accounts",
         columns: {
             address : "address",
             type: "type",
@@ -16,7 +16,7 @@ module.exports = {
         }
     },
     transactions : {
-        name: "transactions",
+        tableName: "transactions",
         columns: {
             id: "id",
             type: "type",
@@ -36,7 +36,7 @@ module.exports = {
         }
     },
     blocks : {
-        name: "blocks",
+        tableName: "blocks",
         columns : {
             id: "id",
             height: "height",
@@ -52,7 +52,7 @@ module.exports = {
         }
     },
     votes : {
-        name: "votes",
+        tableName: "votes",
         columns: {
             voterAddress: "voterAddress",
             delegateAddress: "delegateAddress",
@@ -60,7 +60,7 @@ module.exports = {
         }
     },
     delegates : {
-        name: "delegates",
+        tableName: "delegates",
         columns: {
             address: "address",
             voteWeight: "voteWeight",
@@ -68,7 +68,7 @@ module.exports = {
         }
     },
     multisig_memberships : {
-        name: "multisig_memberships",
+        tableName: "multisig_memberships",
         columns: {
             multsigAccountAddress: "multsigAccountAddress",
             memberAddress: "memberAddress"

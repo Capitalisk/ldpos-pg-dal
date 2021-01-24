@@ -1,5 +1,5 @@
 const table = require("../ldpos-table-schema").multisig_memberships;
-const tableName = table.name;
+const tableName = table.tableName;
 
 exports.up = function(knex) {
     return Promise.resolve(

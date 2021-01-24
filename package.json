@@ -4,7 +4,12 @@
   "description": "Postgres Data Access Layer for LDPoS",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --reporter spec --timeout 10000 --slow 10000"
+    "test": "mocha --reporter spec --timeout 10000 --slow 10000",
+    "migrate:make": "knex migrate:make",
+    "migrate": "knex migrate:latest",
+    "migrate:rollback": "knex migrate:rollback",
+    "seed:make": "knex seed:make",
+    "seed": "knex seed:run"
   },
   "repository": {
     "type": "git",
@@ -23,5 +28,9 @@
   "homepage": "https://github.com/Leasehold/ldpos-postgres-dal#readme",
   "devDependencies": {
     "mocha": "^8.2.1"
+  },
+  "dependencies": {
+    "knex": "^0.21.16",
+    "pg": "^8.5.1"
   }
 }

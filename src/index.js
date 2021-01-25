@@ -124,7 +124,7 @@ class DAL {
         [ballots.columns.delegateAddress]: delegateAddress,
       }
       const newValue = { [ballots.columns.active] : false}
-      await ballotsRepo.updateMatching(activeUnvotesMatcher, newValue);
+      await ballotsRepo.update(activeUnvotesMatcher, newValue);
     }
     ballot = { ...ballot,  type: 'vote', active: true}
     await ballotsRepo.upsert(ballot);

@@ -12,7 +12,6 @@ const fixture = (tableName, data) => ({
     tableName,
     data,
 });
-
 const insert = ({tableName, data}) => Promise.resolve(knex(tableName).insert(data));
 
 const truncate = ({tableName}) => Promise.resolve(knex(tableName).truncate());
@@ -25,6 +24,8 @@ const tearDownFixtures = (...fixtures) => run(truncate, ...fixtures);
 
 const tearDownFixturesAndDestroyConnection = (...fixtures) => tearDownFixtures(...fixtures).then(destroyConnection);
 
+const tearDownAllFixturesAndDestroyConnection = () => tearDownFixtures(...Object.values(FIXTURES)).then(destroyConnection);
+
 const FIXTURES = {
     accounts: fixture( accounts.tableName, accountsData),
     transactions: fixture( transactions.tableName, transactionsData),
@@ -34,4 +35,4 @@ const FIXTURES = {
     ballots: fixture( ballots.tableName, ballotsData),
 };
 
-module.exports = {fixture, insert, truncate, destroyConnection, setupFixtures, tearDownFixtures, tearDownFixturesAndDestroyConnection, FIXTURES}
+module.exports = {fixture, insert, truncate, destroyConnection, setupFixtures, tearDownFixtures, tearDownFixturesAndDestroyConnection, tearDownAllFixturesAndDestroyConnection, FIXTURES}

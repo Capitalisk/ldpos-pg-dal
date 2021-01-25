@@ -1,25 +1,64 @@
 version: 2.1
-
-executors:
-  node-executor:
-    docker:
-      - image: circleci/node:lts
-
 jobs:
-  build-lint-test:
-    executor: node-executor
+  build-test:
     working_directory: ~/repo
+    machine: true
     steps:
-      - checkout:
-          path: ~/repo
+      - checkout
       - run:
-          name: Test
+          name: Install node@v12.18.2
           command: |
             set +e
+            curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
+            export NVM_DIR="/opt/circleci/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm install v12.18.2
+            nvm alias default v12.18.2
+            rm -rf ~./node-gyp
+            node -v
+      - run:
+          name: Install yarn
+          command: |
+            set +e
+            export NVM_DIR="/opt/circleci/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            curl -o- -L https://yarnpkg.com/install.sh | bash
+      - run:
+          name: Setup Database
+          command: |
+            set +e
+            export NVM_DIR="/opt/circleci/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
+            nvm use 12.18.2
+            yarn install
+            yarn start:db
+          background: true
+      - run:
+          name: Wait for DB
+          command: |
+            ./wait-for-it.sh -h localhost -p 5454
+      - run:
+          name: Run integration tests
+          command: |
+            set +e
+            export NVM_DIR="/opt/circleci/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
+            nvm use 12.18.2
             yarn install
             yarn test:integration
+      - run:
+          name: Cleanup
+          command: |
+            set +e
+            export NVM_DIR="/opt/circleci/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
+            nvm use 12.18.2
+            yarn stop:db
 
 workflows:
   test-and-deploy:
     jobs:
-      - build-lint-test
+      - build-test

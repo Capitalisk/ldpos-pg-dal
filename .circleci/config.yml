@@ -17,7 +17,7 @@ jobs:
           command: |
             set +e
             yarn install
-            yarn test
+            yarn test:integration
 
 workflows:
   test-and-deploy:

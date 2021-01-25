@@ -22,6 +22,13 @@ const upsert = (tableName, data, byColumns, columnsToRetain = []) => {
     return Promise.resolve(knex.raw(insertOrUpdateQuery));
 };
 
+const getDataByColumn = (tableName, columnName, columnValue) =>
+    Promise.resolve(
+        knex()
+            .select()
+            .from(tableName)
+            .where(columnName, columnValue));
+
 const isTableEmpty = (tableName) =>
     Promise.resolve(
         knex
@@ -50,4 +57,4 @@ const areTablesEmpty = () => {
     );
 };
 
-module.exports = { upsert, isTableEmpty, areTablesEmpty}
+module.exports = { upsert, isTableEmpty, areTablesEmpty, getDataByColumn}

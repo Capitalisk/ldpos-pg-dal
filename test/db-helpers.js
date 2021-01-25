@@ -1,12 +1,6 @@
+const {getDataByColumn} = require("../knex/pg-helpers");
 const knex = require('../knex/knex');
 const {accounts, transactions, blocks, delegates, multisig_memberships, ballots} = require("../knex/ldpos-table-schema");
-
-const getDataByColumn = (tableName, columnName, columnValue) =>
-Promise.resolve(
-    knex()
-        .select()
-        .from(tableName)
-        .where(columnName, columnValue));
 
 const accountHelpers = {
     getAccountByAddress : (address) => getDataByColumn(accounts.tableName, accounts.columns.address, address)

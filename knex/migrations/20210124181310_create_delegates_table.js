@@ -5,7 +5,8 @@ exports.up = function(knex) {
         knex.schema.createTable(tableName, (tbl) => {
             tbl.string(table.columns.address, 80).notNullable();
             tbl.string(table.columns.voteWeight, 20).notNullable();
-            tbl.bigInteger(table.columns.updateHeight).notNullable();
+            tbl.bigInteger(table.columns.updateHeight).nullable();
+            tbl.primary([table.columns.address]);
         }),
     )
 };

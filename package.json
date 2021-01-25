@@ -4,7 +4,7 @@
   "description": "Postgres Data Access Layer for LDPoS",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --reporter spec --timeout 10000 --slow 10000",
+    "test:integration": "mocha test/integration --reporter spec --timeout 10000 --slow 10000",
     "migrate:make": "knex migrate:make",
     "migrate": "knex migrate:latest",
     "migrate:rollback": "knex migrate:rollback",

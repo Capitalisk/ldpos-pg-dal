@@ -9,7 +9,11 @@
     "migrate": "knex migrate:latest",
     "migrate:rollback": "knex migrate:rollback",
     "seed:make": "knex seed:make",
-    "seed": "knex seed:run"
+    "seed": "knex seed:run",
+    "start:db": "docker-compose up db",
+    "stop:db": "docker-compose stop db && docker-compose rm -f db",
+    "start:pgadmin": "docker-compose up pgadmin",
+    "stop:pgadmin": "docker-compose stop pgadmin && docker-compose rm -f pgadmin"
   },
   "repository": {
     "type": "git",

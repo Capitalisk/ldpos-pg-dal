@@ -1,10 +1,9 @@
 const {firstOrDefault, isEmptyArray} = require("./utils");
 const knex = require("../knex/knex")
 const crypto = require('crypto');
-const { accounts, ballots, multisig_memberships, delegates, blocks, transactions } = require("../knex/ldpos-table-schema");
-const { upsert, areTablesEmpty }  = require("../knex/pg-helpers");
-const { noMatchFound, matchFound, findMatchingRecords, updateMatchingRecords, insert} = require("../knex/knex-helpers")
-
+const {  ballots, multisig_memberships, delegates } = require("../knex/ldpos-table-schema");
+const { areTablesEmpty }  = require("../knex/pg-helpers");
+const { accountsRepo, ballotsRepo, multisigMembershipsRepo, transactionsRepo, delegatesRepo } = require("./repository")
 const DEFAULT_NETWORK_SYMBOL = 'ldpos';
 
 // todo - constructor and init can be refined
@@ -75,12 +74,11 @@ class DAL {
 
 
   async upsertAccount(account) {
-    await upsert(accounts.tableName, account, [accounts.columns.address]);
+    await accountsRepo.upsert(account);
   }
 
   async getAccount(walletAddress) {
-    const addressMatcher = { [accounts.columns.address] : walletAddress };
-    const account = firstOrDefault(await findMatchingRecords(accounts.tableName, addressMatcher), null);
+    const account = await accountsRepo.getByAddress(walletAddress);
     if (!account) {
       let error = new Error(`Account ${walletAddress} did not exist`);
       error.name = 'AccountDidNotExistError';
@@ -101,14 +99,15 @@ class DAL {
   async vote(ballot) {
     const { id, voterAddress, delegateAddress } = ballot;
     const idMatcher = { [ballots.columns.id] : id}
-    if (await noMatchFound(ballots.tableName, idMatcher)) {
+    if (await ballotsRepo.notExist(idMatcher)) {
+
       const activeVotesMatcher = {
         [ballots.columns.active]: true,
         [ballots.columns.type]: "vote",
         [ballots.columns.voterAddress]: voterAddress,
         [ballots.columns.delegateAddress]: delegateAddress,
       }
-      const hasExistingVote = await matchFound(ballots.tableName, activeVotesMatcher);
+      const hasExistingVote = await ballotsRepo.exists(activeVotesMatcher);
 
       if (hasExistingVote) {
         let error = new Error(
@@ -125,10 +124,10 @@ class DAL {
         [ballots.columns.delegateAddress]: delegateAddress,
       }
       const newValue = { [ballots.columns.active] : false}
-      await updateMatchingRecords(ballots.tableName, activeUnvotesMatcher, newValue);
+      await ballotsRepo.updateMatching(activeUnvotesMatcher, newValue);
     }
     ballot = { ...ballot,  type: 'vote', active: true}
-    await upsert(ballots.tableName, ballot,[ballots.columns.id]);
+    await ballotsRepo.upsert(ballot);
   }
 
   async unvote(ballot) {
@@ -168,14 +167,12 @@ class DAL {
         [multisig_memberships.columns.multsigAccountAddress]: multisigAddress,
         [multisig_memberships.columns.memberAddress]: memberAddress
       }
-      await insert(multisig_memberships.tableName, multiSigMembership);
+      await multisigMembershipsRepo.insert(multiSigMembership);
     }
   }
 
-  // todo - need to refine this method
   async getMultisigWalletMembers(multisigAddress) {
-    const addressMatcher = {[multisig_memberships.columns.multsigAccountAddress] : multisigAddress};
-    let memberAddresses = await findMatchingRecords(multisig_memberships.tableName, addressMatcher);
+    let memberAddresses = await multisigMembershipsRepo.getMembersByMultsigAccountAddress(multisigAddress);
     if (isEmptyArray(memberAddresses)) {
       let error = new Error(
           `Address ${multisigAddress} is not registered as a multisig wallet`
@@ -235,8 +232,7 @@ class DAL {
   }
 
   async getTransaction(transactionId) {
-    const idMatcher = { [transactions.columns.id] : transactionId };
-    const transaction = firstOrDefault(await findMatchingRecords(transactions.tableName, idMatcher), null);
+    const transaction = await transactionsRepo.getById(transactionId)
     if (!transaction) {
       let error = new Error(`Transaction ${transactionId} did not exist`);
       error.name = 'TransactionDidNotExistError';
@@ -271,17 +267,16 @@ class DAL {
   }
 
   async upsertDelegate(delegate) {
-    await upsert(delegates.tableName, delegate, [delegates.columns.address]);
+    await delegatesRepo.upsert(delegate);
   }
 
   async hasDelegate(walletAddress) {
     let addressMatcher = {[delegates.columns.address]: walletAddress};
-    return await matchFound(delegates.tableName, addressMatcher);
+    return await delegatesRepo.exists(addressMatcher);
   }
 
   async getDelegate(walletAddress) {
-    let addressMatcher = {[delegates.columns.address]: walletAddress};
-    const delegate = firstOrDefault(await findMatchingRecords(delegates.tableName, addressMatcher), null);
+    const delegate = await delegatesRepo.getByAddress(walletAddress);
     if (!delegate) {
       let error = new Error(`Delegate ${walletAddress} did not exist`);
       error.name = 'DelegateDidNotExistError';

@@ -1,6 +1,6 @@
 const {run} = require("../src/utils");
 const knex = require('../knex/knex');
-const {accounts, transactions, blocks, delegates, multisig_memberships, ballots} = require("../knex/ldpos-table-schema");
+const {accountsTable, transactionsTable, blocksTable, delegatesTable, multisig_membershipsTable, ballotsTable} = require("../knex/ldpos-table-schema");
 const accountsData = require("./fixtures/accounts")
 const transactionsData = require("./fixtures/transactions")
 const blocksData = require("./fixtures/blocks")
@@ -27,12 +27,12 @@ const tearDownFixturesAndDestroyConnection = (...fixtures) => tearDownFixtures(.
 const tearDownAllFixturesAndDestroyConnection = () => tearDownFixtures(...Object.values(FIXTURES)).then(destroyConnection);
 
 const FIXTURES = {
-    accounts: fixture( accounts.tableName, accountsData),
-    transactions: fixture( transactions.tableName, transactionsData),
-    blocks: fixture( blocks.tableName, blocksData),
-    delegates: fixture( delegates.tableName, delegatesData),
-    multisig_memberships: fixture( multisig_memberships.tableName, multisig_membershipsData),
-    ballots: fixture( ballots.tableName, ballotsData),
+    accounts: fixture( accountsTable.name, accountsData),
+    transactions: fixture( transactionsTable.name, transactionsData),
+    blocks: fixture( blocksTable.name, blocksData),
+    delegates: fixture( delegatesTable.name, delegatesData),
+    multisig_memberships: fixture( multisig_membershipsTable.name, multisig_membershipsData),
+    ballots: fixture( ballotsTable.name, ballotsData),
 };
 
 module.exports = {fixture, insert, truncate, destroyConnection, setupFixtures, tearDownFixtures, tearDownFixturesAndDestroyConnection, tearDownAllFixturesAndDestroyConnection, FIXTURES}

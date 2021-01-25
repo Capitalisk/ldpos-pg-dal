@@ -1,7 +1,7 @@
 const {firstOrDefault, isEmptyArray} = require("./utils");
 const knex = require("../knex/knex")
 const crypto = require('crypto');
-const {  ballots, multisig_memberships, delegates } = require("../knex/ldpos-table-schema");
+const {  ballotsTable, multisig_membershipsTable, delegatesTable } = require("../knex/ldpos-table-schema");
 const { areTablesEmpty }  = require("../knex/pg-helpers");
 const { accountsRepo, ballotsRepo, multisigMembershipsRepo, transactionsRepo, delegatesRepo } = require("./repository")
 const DEFAULT_NETWORK_SYMBOL = 'ldpos';
@@ -98,14 +98,14 @@ class DAL {
 
   async vote(ballot) {
     const { id, voterAddress, delegateAddress } = ballot;
-    const idMatcher = { [ballots.columns.id] : id}
+    const idMatcher = { [ballotsTable.field.id] : id}
     if (await ballotsRepo.notExist(idMatcher)) {
 
       const activeVotesMatcher = {
-        [ballots.columns.active]: true,
-        [ballots.columns.type]: "vote",
-        [ballots.columns.voterAddress]: voterAddress,
-        [ballots.columns.delegateAddress]: delegateAddress,
+        [ballotsTable.field.active]: true,
+        [ballotsTable.field.type]: "vote",
+        [ballotsTable.field.voterAddress]: voterAddress,
+        [ballotsTable.field.delegateAddress]: delegateAddress,
       }
       const hasExistingVote = await ballotsRepo.exists(activeVotesMatcher);
 
@@ -118,12 +118,12 @@ class DAL {
         throw error;
       }
       const activeUnvotesMatcher = {
-        [ballots.columns.active]: true,
-        [ballots.columns.type]: "unvote",
-        [ballots.columns.voterAddress]: voterAddress,
-        [ballots.columns.delegateAddress]: delegateAddress,
+        [ballotsTable.field.active]: true,
+        [ballotsTable.field.type]: "unvote",
+        [ballotsTable.field.voterAddress]: voterAddress,
+        [ballotsTable.field.delegateAddress]: delegateAddress,
       }
-      const newValue = { [ballots.columns.active] : false}
+      const newValue = { [ballotsTable.field.active] : false}
       await ballotsRepo.update(activeUnvotesMatcher, newValue);
     }
     ballot = { ...ballot,  type: 'vote', active: true}
@@ -164,8 +164,8 @@ class DAL {
 
     for (let memberAddress of memberAddresses) {
       const multiSigMembership = {
-        [multisig_memberships.columns.multsigAccountAddress]: multisigAddress,
-        [multisig_memberships.columns.memberAddress]: memberAddress
+        [multisig_membershipsTable.field.multsigAccountAddress]: multisigAddress,
+        [multisig_membershipsTable.field.memberAddress]: memberAddress
       }
       await multisigMembershipsRepo.insert(multiSigMembership);
     }
@@ -271,7 +271,7 @@ class DAL {
   }
 
   async hasDelegate(walletAddress) {
-    let addressMatcher = {[delegates.columns.address]: walletAddress};
+    let addressMatcher = {[delegatesTable.field.address]: walletAddress};
     return await delegatesRepo.exists(addressMatcher);
   }
 

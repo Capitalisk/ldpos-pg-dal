@@ -1,15 +1,15 @@
-const table = require("../ldpos-table-schema").ballots;
-const tableName = table.tableName;
+const table = require("../ldpos-table-schema").ballotsTable;
+const tableName = table.name;
 exports.up = function(knex) {
     return Promise.resolve(
         knex.schema.createTable(tableName, (tbl) => {
-            tbl.string(table.columns.id, 44).notNullable();
-            tbl.string(table.columns.type, 20).notNullable();
-            tbl.string(table.columns.voterAddress, 80).notNullable();
-            tbl.string(table.columns.delegateAddress, 80).notNullable()
-            tbl.boolean(table.columns.active).defaultTo(true).notNullable();
-            tbl.primary([table.columns.id]);
-            tbl.unique([table.columns.voterAddress, table.columns.delegateAddress]);
+            tbl.string(table.field.id, 44).notNullable();
+            tbl.string(table.field.type, 20).notNullable();
+            tbl.string(table.field.voterAddress, 80).notNullable();
+            tbl.string(table.field.delegateAddress, 80).notNullable()
+            tbl.boolean(table.field.active).defaultTo(true).notNullable();
+            tbl.primary([table.field.id]);
+            tbl.unique([table.field.voterAddress, table.field.delegateAddress]);
         }),
     )
 };

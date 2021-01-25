@@ -1,7 +1,7 @@
 const postgresDal = require("../../src")
 const mockMemoryDal = require("../mocks/dal")
 const genesis = require("../fixtures/genesis-functional")
-const { accounts, delegates, multisig_memberships, ballots} = require("../../knex/ldpos-table-schema");
+const { accountsTable, delegatesTable, multisig_membershipsTable, ballotsTable} = require("../../knex/ldpos-table-schema");
 const {accountsRepo, delegatesRepo, ballotsRepo, multisigMembershipsRepo} = require("../../src/repository")
 const {excludeNullPropertiesFromArr,sort, excludePropertyFromArr, firstOrDefault} =require("../../src/utils")
 const { tearDownAllFixturesAndDestroyConnection} = require('../setup')
@@ -19,26 +19,26 @@ describe('Integration tests', async () => {
     });
 
     it('should initialise genesis accounts', async () => {
-        const mockAccounts = sort(Object.values(mockRepository.accounts), accounts.columns.address);
-        const actualAccounts = sort(excludeNullPropertiesFromArr(await accountsRepo.get()), accounts.columns.address);
+        const mockAccounts = sort(Object.values(mockRepository.accounts), accountsTable.field.address);
+        const actualAccounts = sort(excludeNullPropertiesFromArr(await accountsRepo.get()), accountsTable.field.address);
         expect(actualAccounts).to.deep.equal(mockAccounts);
     });
 
     it('should initialise genesis delegates', async () => {
-        const mockDelegates = sort(Object.values(mockRepository.delegates), delegates.columns.address);
-        const actualDelegates = sort(excludeNullPropertiesFromArr(await delegatesRepo.get()), delegates.columns.address);
+        const mockDelegates = sort(Object.values(mockRepository.delegates), delegatesTable.field.address);
+        const actualDelegates = sort(excludeNullPropertiesFromArr(await delegatesRepo.get()), delegatesTable.field.address);
         expect(actualDelegates).to.deep.equal(mockDelegates);
     });
 
     it('should initialise genesis ballots', async () => {
-        const mockBallots = sort(excludePropertyFromArr(Object.values(mockRepository.ballots), ballots.columns.id), ballots.columns.voterAddress);
-        const actualBallots = sort(excludePropertyFromArr(await ballotsRepo.get(), ballots.columns.id), ballots.columns.voterAddress);
+        const mockBallots = sort(excludePropertyFromArr(Object.values(mockRepository.ballots), ballotsTable.field.id), ballotsTable.field.voterAddress);
+        const actualBallots = sort(excludePropertyFromArr(await ballotsRepo.get(), ballotsTable.field.id), ballotsTable.field.voterAddress);
         expect(actualBallots).to.deep.equal(mockBallots);
     });
 
     it('should initialise genesis multisig_memeberships', async () => {
         const mockMemberships = [...firstOrDefault(Object.values(mockRepository.multisigMembers), [])];
-        const actualMemberships = (await multisigMembershipsRepo.get()).map(ms => ms[multisig_memberships.columns.memberAddress]);
+        const actualMemberships = (await multisigMembershipsRepo.get()).map(ms => ms[multisig_membershipsTable.field.memberAddress]);
         expect(actualMemberships).to.deep.equal(mockMemberships);
     });
 });

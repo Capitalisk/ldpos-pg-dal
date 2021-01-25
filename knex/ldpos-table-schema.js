@@ -1,7 +1,7 @@
 module.exports = {
-    accounts : {
-        tableName: "accounts",
-        columns: {
+    accountsTable : {
+        name: "accounts",
+        field: {
             address : "address",
             type: "type",
             balance: "balance",
@@ -15,9 +15,9 @@ module.exports = {
             updateHeight: "updateHeight"
         }
     },
-    transactions : {
-        tableName: "transactions",
-        columns: {
+    transactionsTable : {
+        name: "transactions",
+        field: {
             id: "id",
             type: "type",
             recipientAddress: "recipientAddress",
@@ -35,9 +35,9 @@ module.exports = {
             indexInBlock: "indexInBlock"
         }
     },
-    blocks : {
-        tableName: "blocks",
-        columns : {
+    blocksTable : {
+        name: "blocks",
+        field : {
             id: "id",
             height: "height",
             timestamp: "timestamp",
@@ -51,9 +51,9 @@ module.exports = {
             synched: "synched"
         }
     },
-    ballots : {
-        tableName: "ballots",
-        columns: {
+    ballotsTable : {
+        name: "ballots",
+        field: {
             id: "id", // matches transactionId
             type: "type",
             voterAddress: "voterAddress",
@@ -61,17 +61,17 @@ module.exports = {
             active: "active"
         }
     },
-    delegates : {
-        tableName: "delegates",
-        columns: {
+    delegatesTable : {
+        name: "delegates",
+        field: {
             address: "address",
             voteWeight: "voteWeight",
             updateHeight: "updateHeight"
         }
     },
-    multisig_memberships : {
-        tableName: "multisig_memberships",
-        columns: {
+    multisig_membershipsTable : {
+        name: "multisig_memberships",
+        field: {
             multsigAccountAddress: "multsigAccountAddress",
             memberAddress: "memberAddress"
         }

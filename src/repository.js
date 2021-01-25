@@ -1,5 +1,5 @@
 const {findMatchingRecords, updateMatchingRecords, matchFound, noMatchFound, insert } = require("../knex/knex-helpers");
-const {accounts, transactions, blocks, delegates, multisig_memberships, ballots} = require("../knex/ldpos-table-schema");
+const {accountsTable, transactionsTable, blocksTable, delegatesTable, multisig_membershipsTable, ballotsTable} = require("../knex/ldpos-table-schema");
 const { upsert } = require("../knex/pg-helpers");
 const { firstOrDefault} = require("./utils")
 
@@ -17,33 +17,33 @@ const accountsRepo = (( tableName, ...primaryKeys) => {
     return {
         ...accountsRepository,
         getByAddress : async (address) => {
-            const account = await findMatchingRecords(tableName, { [accounts.columns.address]: address});
+            const account = await findMatchingRecords(tableName, { [accountsTable.field.address]: address});
             return firstOrDefault(account, null);
         }
     }
-})(accounts.tableName, accounts.columns.address);
+})(accountsTable.name, accountsTable.field.address);
 
 const transactionsRepo = (( tableName, ...primaryKeys) => {
     const transactionRepository = repository(tableName, primaryKeys);
     return {
         ...transactionRepository,
         getById : async (id) => {
-            const transaction = await findMatchingRecords(tableName, {[transactions.columns.id]: id});
+            const transaction = await findMatchingRecords(tableName, {[transactionsTable.field.id]: id});
             return firstOrDefault(transaction, null);
         }
     }
-})(transactions.tableName, transactions.columns.id);
+})(transactionsTable.name, transactionsTable.field.id);
 
 const blocksRepo = (( tableName, ...primaryKeys) => {
     const blocksRepository = repository(tableName, primaryKeys);
     return {
         ...blocksRepository,
         getBlockById : async(id) => {
-            const block = await findMatchingRecords(tableName, {[blocks.columns.id]: id});
+            const block = await findMatchingRecords(tableName, {[blocksTable.field.id]: id});
             return firstOrDefault(block, null);
         }
     }
-})(blocks.tableName, blocks.columns.id);
+})(blocksTable.name, blocksTable.field.id);
 
 
 const delegatesRepo = (( tableName, ...primaryKeys) => {
@@ -51,11 +51,11 @@ const delegatesRepo = (( tableName, ...primaryKeys) => {
     return {
         ...delegatesRepository,
         getByAddress : async (address) => {
-            const delegate = await findMatchingRecords(tableName, {[delegates.columns.address]: address});
+            const delegate = await findMatchingRecords(tableName, {[delegatesTable.field.address]: address});
             return firstOrDefault(delegate, null);
         },
     }
-})(delegates.tableName, delegates.columns.address);
+})(delegatesTable.name, delegatesTable.field.address);
 
 
 const multisigMembershipsRepo = (( tableName, ...primaryKeys) => {
@@ -63,17 +63,17 @@ const multisigMembershipsRepo = (( tableName, ...primaryKeys) => {
     return {
         ...multisigMembershipsRepository,
         getMembersByMultsigAccountAddress : (address) => {
-            const multsigAccountAddressMatcher = {[multisig_memberships.columns.multsigAccountAddress]: address};
-            return findMatchingRecords(tableName, multsigAccountAddressMatcher).map(ms => ms[multisig_memberships.columns.memberAddress]);
+            const multsigAccountAddressMatcher = {[multisig_membershipsTable.field.multsigAccountAddress]: address};
+            return findMatchingRecords(tableName, multsigAccountAddressMatcher).map(ms => ms[multisig_membershipsTable.field.memberAddress]);
         },
     }
-})(multisig_memberships.tableName, multisig_memberships.columns.multsigAccountAddress, multisig_memberships.columns.memberAddress);
+})(multisig_membershipsTable.name, multisig_membershipsTable.field.multsigAccountAddress, multisig_membershipsTable.field.memberAddress);
 
 const ballotsRepo = (( tableName, ...primaryKeys) => {
     const ballotsRepository = repository(tableName, primaryKeys);
     return {
         ...ballotsRepository
     }
-})(ballots.tableName, ballots.columns.id);
+})(ballotsTable.name, ballotsTable.field.id);
 
 module.exports = { accountsRepo, transactionsRepo, blocksRepo, delegatesRepo, multisigMembershipsRepo, ballotsRepo }

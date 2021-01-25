@@ -14,6 +14,7 @@ exports.up = function(knex) {
             tbl.string(table.columns.forgerSignature, 32984).notNullable();
             tbl.text(table.columns.signatures).notNullable();
             tbl.boolean(table.columns.synched).defaultTo(false);
+            tbl.primary([table.columns.id]);
         }),
     )
 };

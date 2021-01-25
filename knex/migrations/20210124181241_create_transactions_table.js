@@ -3,7 +3,7 @@ const tableName = table.tableName;
 exports.up = function(knex) {
     return Promise.resolve(
         knex.schema.createTable(tableName, (tbl) => {
-            tbl.string(table.columns.id, 44).unique();
+            tbl.string(table.columns.id, 44).notNullable();
             tbl.string(table.columns.type, 30).notNullable();
             tbl.string(table.columns.recipientAddress, 80).nullable();
             tbl.string(table.columns.amount, 20).notNullable();
@@ -18,6 +18,7 @@ exports.up = function(knex) {
             tbl.text(table.columns.signatures).nullable();
             tbl.string(table.columns.blockId, 44).notNullable();
             tbl.bigInteger(table.columns.indexInBlock).notNullable();
+            tbl.primary([table.columns.id]);
         })
     )
 };

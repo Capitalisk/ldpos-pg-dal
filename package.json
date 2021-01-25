@@ -2,9 +2,9 @@
   "name": "ldpos-postgres-dal",
   "version": "1.0.0",
   "description": "Postgres Data Access Layer for LDPoS",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "test:integration": "mocha test/integration --reporter spec --timeout 10000 --slow 10000",
+    "test:integration": "mocha test/integration --reporter spec --timeout 10000 --slow 10000 -r chai/register-expect",
     "migrate:make": "knex migrate:make",
     "migrate": "knex migrate:latest",
     "migrate:rollback": "knex migrate:rollback",
@@ -31,6 +31,7 @@
   },
   "homepage": "https://github.com/Leasehold/ldpos-postgres-dal#readme",
   "devDependencies": {
+    "chai": "^4.2.0",
     "mocha": "^8.2.1"
   },
   "dependencies": {

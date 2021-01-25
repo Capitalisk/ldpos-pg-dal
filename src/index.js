@@ -1,8 +1,9 @@
 const {firstOrDefault, isEmptyArray} = require("./utils");
-const knex = require("./knex/knex")
+const knex = require("../knex/knex")
 const crypto = require('crypto');
-const { accounts, ballots, multisig_memberships, delegates, blocks, transactions } = require("./knex/ldpos-table-schema");
-const { upsert, noMatchFound, matchFound, findMatchingRecords, updateMatchingRecords, insert, areTablesEmpty }  = require("./knex/pg-helpers");
+const { accounts, ballots, multisig_memberships, delegates, blocks, transactions } = require("../knex/ldpos-table-schema");
+const { upsert, areTablesEmpty }  = require("../knex/pg-helpers");
+const { noMatchFound, matchFound, findMatchingRecords, updateMatchingRecords, insert} = require("../knex/knex-helpers")
 
 const DEFAULT_NETWORK_SYMBOL = 'ldpos';
 
@@ -65,6 +66,7 @@ class DAL {
           })
       );
     }
+    return this;
   }
 
   async getNetworkSymbol() {

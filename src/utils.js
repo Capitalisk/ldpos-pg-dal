@@ -24,5 +24,24 @@ const isLocal = (env) => env === "development";
 
 const run = (runnable, ...collection) => Promise.all(collection.map(runnable));
 
+const excludeNullPropertiesFromArr = (arr) => {
+    return arr.map(o =>
+        Object.entries(o)
+            .reduce((object, [key, value]) =>
+                    isNullOrUndefinedOrEmpty(value) ? object : {...object, [key]: value}
+                , {}));
+}
 
-module.exports = { isNullOrUndefinedOrEmpty, firstOrDefault, isLocal, isNullOrUndefined, run, isEmptyArray}
+const excludePropertyFromArr = (arr, propertyName) => {
+    return arr.map(o =>
+        Object.entries(o)
+            .reduce((object, [key, value]) =>
+                    key === propertyName ? object : {...object, [key]: value}
+                , {}));
+}
+
+const sort = (arr, key) => arr.sort((o1, o2) => {
+    return o1[key].localeCompare(o2[key]);
+});
+
+module.exports = { isNullOrUndefinedOrEmpty, firstOrDefault, isLocal, isNullOrUndefined, run, isEmptyArray, excludeNullPropertiesFromArr, sort, excludePropertyFromArr}

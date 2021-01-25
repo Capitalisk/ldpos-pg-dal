@@ -1,4 +1,4 @@
-const {run} = require("../utils");
+const {run} = require("../src/utils");
 const knex = require('../knex/knex');
 const {accounts, transactions, blocks, delegates, multisig_memberships, ballots} = require("../knex/ldpos-table-schema");
 const accountsData = require("./fixtures/accounts")

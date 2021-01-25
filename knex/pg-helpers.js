@@ -1,5 +1,6 @@
 const knex = require("./knex");
-const { isNullOrUndefinedOrEmpty, firstOrDefault} = require("../utils");
+const { isNullOrUndefinedOrEmpty} = require("../src/utils");
+const {isTableEmpty} = require("./knex-helpers");
 
 const upsert = (tableName, data, byColumns, columnsToRetain = []) => {
 
@@ -22,45 +23,6 @@ const upsert = (tableName, data, byColumns, columnsToRetain = []) => {
     return Promise.resolve(knex.raw(insertOrUpdateQuery));
 };
 
-const insert = (tableName, data) => Promise.resolve(knex(tableName).insert(data));
-
-const buildEqualityMatcherQuery = (tableName, matcher) => {
-    const baseQuery = knex(tableName).select();
-    return Object.entries(matcher).reduce((query, [key, value]) => query.where(key, value), baseQuery);
-}
-
-const findMatchingRecords = (tableName, matcher) => {
-    return Promise.resolve(buildEqualityMatcherQuery(tableName, matcher))
-};
-
-const updateMatchingRecords = (tableName, matcher, newValues) => {
-    Promise.resolve(
-             buildEqualityMatcherQuery(tableName, matcher)
-            .update(newValues));
-}
-
-const findMatchingRecordsCount  = (tableName, matcher) =>
-    Promise.resolve(
-             buildEqualityMatcherQuery(tableName, matcher)
-            .count());
-
-const noMatchFound = (tableName, matcher) => {
-    return findMatchingRecordsCount(tableName, matcher)
-        .then((table) => firstOrDefault(table, { count: '0' }).count === '0');
-}
-
-const matchFound = (tableName, matcher) => {
-    return noMatchFound(tableName, matcher)
-        .then(noMatchFound => !noMatchFound);
-}
-
-const isTableEmpty = (tableName) =>
-    Promise.resolve(
-        knex
-            .table(tableName)
-            .count()
-            .then((table) => firstOrDefault(table, { count: '0' }).count === '0'),
-    );
 
 const areTablesEmpty = () => {
     const findAllTablesQuery = `select c.relname as tablename
@@ -82,4 +44,4 @@ const areTablesEmpty = () => {
     );
 };
 
-module.exports = { upsert, isTableEmpty, areTablesEmpty, findMatchingRecordsCount, noMatchFound, matchFound, findMatchingRecords, updateMatchingRecords, insert}
+module.exports = { upsert, areTablesEmpty}

@@ -1,7 +1,8 @@
 const { isEmptyArray} = require("./utils");
 const knex = require("../knex/knex")
 const crypto = require('crypto');
-const {  ballotsTable, multisig_membershipsTable, delegatesTable } = require("../knex/ldpos-table-schema");
+const { firstOrDefault } = require("./utils")
+const { ballotsTable, multisig_membershipsTable } = require("../knex/ldpos-table-schema");
 const { areTablesEmpty }  = require("../knex/pg-helpers");
 const { accountsRepo, ballotsRepo, multisigMembershipsRepo, transactionsRepo, delegatesRepo } = require("./repository")
 const DEFAULT_NETWORK_SYMBOL = 'ldpos';
@@ -78,7 +79,7 @@ class DAL {
   }
 
   async getAccount(walletAddress) {
-    const account = await accountsRepo.address(walletAddress).get();
+    const account = firstOrDefault(await accountsRepo.address(walletAddress).get(), null);
     if (!account) {
       let error = new Error(`Account ${walletAddress} did not exist`);
       error.name = 'AccountDidNotExistError';
@@ -231,7 +232,7 @@ class DAL {
   }
 
   async getTransaction(transactionId) {
-    const transaction = await transactionsRepo.id(transactionId).get();
+    const transaction = firstOrDefault(await transactionsRepo.id(transactionId).get(), null);
     if (!transaction) {
       let error = new Error(`Transaction ${transactionId} did not exist`);
       error.name = 'TransactionDidNotExistError';
@@ -274,7 +275,7 @@ class DAL {
   }
 
   async getDelegate(walletAddress) {
-    const delegate = await delegatesRepo.address(walletAddress).get();
+    const delegate = firstOrDefault(await delegatesRepo.address(walletAddress).get(), null);
     if (!delegate) {
       let error = new Error(`Delegate ${walletAddress} did not exist`);
       error.name = 'DelegateDidNotExistError';

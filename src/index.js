@@ -123,8 +123,8 @@ class DAL {
         [ballotsTable.field.voterAddress]: voterAddress,
         [ballotsTable.field.delegateAddress]: delegateAddress,
       }
-      const newValue = { [ballotsTable.field.active] : false}
-      await ballotsRepo.update(activeUnvotesMatcher, newValue);
+      const activeBallot = { [ballotsTable.field.active] : false}
+      await ballotsRepo.update(activeBallot,activeUnvotesMatcher);
     }
     ballot = { ...ballot,  type: 'vote', active: true}
     await ballotsRepo.upsert(ballot);

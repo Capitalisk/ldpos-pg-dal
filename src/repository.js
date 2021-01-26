@@ -1,15 +1,18 @@
-const {findMatchingRecords, updateMatchingRecords, matchFound, noMatchFound, insert } = require("../knex/knex-helpers");
+const {findMatchingRecords, updateMatchingRecords, matchFound, noMatchFound, insert, buildEqualityMatcherQuery } = require("../knex/knex-helpers");
 const {accountsTable, transactionsTable, blocksTable, delegatesTable, multisig_membershipsTable, ballotsTable} = require("../knex/ldpos-table-schema");
 const { upsert } = require("../knex/pg-helpers");
 const { firstOrDefault} = require("./utils")
 
+// todo - advanced matcher should be implemented based on requirement
+
 const repository = (tableName, ...primaryKeys) => ({
-    get: () => findMatchingRecords(tableName, {}),
+    get: (equalityMatcher = {}) => findMatchingRecords(tableName, equalityMatcher),
     insert: (data) => insert(tableName, data),
-    update: (matcher, updatedData) => updateMatchingRecords(tableName, matcher, updatedData),
+    update: (updatedData, equalityMatcher = {}) => updateMatchingRecords(tableName, equalityMatcher, updatedData),
     upsert: (data) => upsert(tableName, data, primaryKeys),
-    exists: (matcher) => matchFound(tableName, matcher),
-    notExist: (matcher) => noMatchFound(tableName, matcher)
+    exists: (equalityMatcher = {}) => matchFound(tableName, equalityMatcher),
+    notExist: (equalityMatcher= {}) => noMatchFound(tableName, equalityMatcher),
+    buildBaseQuery: (equalityMatcher = {}) => buildEqualityMatcherQuery(tableName, equalityMatcher),
 });
 
 const accountsRepo = (( tableName, ...primaryKeys) => {
@@ -17,7 +20,7 @@ const accountsRepo = (( tableName, ...primaryKeys) => {
     return {
         ...accountsRepository,
         getByAddress : async (address) => {
-            const account = await findMatchingRecords(tableName, { [accountsTable.field.address]: address});
+            const account = await accountsRepository.get({ [accountsTable.field.address]: address});
             return firstOrDefault(account, null);
         }
     }
@@ -28,7 +31,7 @@ const transactionsRepo = (( tableName, ...primaryKeys) => {
     return {
         ...transactionRepository,
         getById : async (id) => {
-            const transaction = await findMatchingRecords(tableName, {[transactionsTable.field.id]: id});
+            const transaction = await transactionRepository.get({[transactionsTable.field.id]: id});
             return firstOrDefault(transaction, null);
         }
     }
@@ -39,7 +42,7 @@ const blocksRepo = (( tableName, ...primaryKeys) => {
     return {
         ...blocksRepository,
         getBlockById : async(id) => {
-            const block = await findMatchingRecords(tableName, {[blocksTable.field.id]: id});
+            const block = await blocksRepository.get({[blocksTable.field.id]: id});
             return firstOrDefault(block, null);
         }
     }
@@ -51,7 +54,7 @@ const delegatesRepo = (( tableName, ...primaryKeys) => {
     return {
         ...delegatesRepository,
         getByAddress : async (address) => {
-            const delegate = await findMatchingRecords(tableName, {[delegatesTable.field.address]: address});
+            const delegate = await delegatesRepository.get({[delegatesTable.field.address]: address});
             return firstOrDefault(delegate, null);
         },
     }
@@ -64,7 +67,7 @@ const multisigMembershipsRepo = (( tableName, ...primaryKeys) => {
         ...multisigMembershipsRepository,
         getMembersByMultsigAccountAddress : (address) => {
             const multsigAccountAddressMatcher = {[multisig_membershipsTable.field.multsigAccountAddress]: address};
-            return findMatchingRecords(tableName, multsigAccountAddressMatcher).map(ms => ms[multisig_membershipsTable.field.memberAddress]);
+            return multisigMembershipsRepository.get(multsigAccountAddressMatcher).map(ms => ms[multisig_membershipsTable.field.memberAddress]);
         },
     }
 })(multisig_membershipsTable.name, multisig_membershipsTable.field.multsigAccountAddress, multisig_membershipsTable.field.memberAddress);

@@ -12,10 +12,10 @@ const findMatchingRecords = (tableName, matcher) => {
     return Promise.resolve(buildEqualityMatcherQuery(tableName, matcher))
 };
 
-const updateMatchingRecords = (tableName, matcher, newValues) => {
+const updateMatchingRecords = (tableName, matcher, updatedData) => {
     Promise.resolve(
         buildEqualityMatcherQuery(tableName, matcher)
-            .update(newValues));
+            .update(updatedData));
 }
 
 const findMatchingRecordsCount  = (tableName, matcher) =>
@@ -41,4 +41,4 @@ const isTableEmpty = (tableName) =>
             .then((table) => firstOrDefault(table, {count: '0'}).count === 0),
     );
 
-module.exports = { isTableEmpty, findMatchingRecordsCount, noMatchFound, matchFound, findMatchingRecords, updateMatchingRecords, insert }
+module.exports = { isTableEmpty, findMatchingRecordsCount, noMatchFound, matchFound, findMatchingRecords, updateMatchingRecords, insert, buildEqualityMatcherQuery }

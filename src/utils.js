@@ -2,6 +2,9 @@ const objectType = 'object';
 const functionType = 'function';
 
 const firstOrDefault = (array, defaultValue) => (array.length > 0 ? firstValue(array) : defaultValue);
+
+const arrOrFirstOrNull = (arr) => arr.length > 1 ? arr : firstOrDefault(arr, null);
+
 const firstValue = (array) => array[0];
 
 const isNullOrUndefinedOrEmpty = (obj , checkEmptyString = false) =>
@@ -44,4 +47,4 @@ const sort = (arr, key) => arr.sort((o1, o2) => {
     return o1[key].localeCompare(o2[key]);
 });
 
-module.exports = { isNullOrUndefinedOrEmpty, firstOrDefault, isLocal, isNullOrUndefined, run, isEmptyArray, excludeNullPropertiesFromArr, sort, excludePropertyFromArr}
+module.exports = { isNullOrUndefinedOrEmpty, firstOrDefault, isLocal, isNullOrUndefined, run, isEmptyArray, excludeNullPropertiesFromArr, sort, excludePropertyFromArr, arrOrFirstOrNull}

@@ -1,4 +1,4 @@
-const {firstOrDefault, isEmptyArray} = require("./utils");
+const { isEmptyArray} = require("./utils");
 const knex = require("../knex/knex")
 const crypto = require('crypto');
 const {  ballotsTable, multisig_membershipsTable, delegatesTable } = require("../knex/ldpos-table-schema");
@@ -78,7 +78,7 @@ class DAL {
   }
 
   async getAccount(walletAddress) {
-    const account = await accountsRepo.getByAddress(walletAddress);
+    const account = await accountsRepo.address(walletAddress).get();
     if (!account) {
       let error = new Error(`Account ${walletAddress} did not exist`);
       error.name = 'AccountDidNotExistError';
@@ -98,8 +98,7 @@ class DAL {
 
   async vote(ballot) {
     const { id, voterAddress, delegateAddress } = ballot;
-    const idMatcher = { [ballotsTable.field.id] : id}
-    if (await ballotsRepo.notExist(idMatcher)) {
+    if (await ballotsRepo.id(id).notExist()) {
 
       const activeVotesMatcher = {
         [ballotsTable.field.active]: true,
@@ -172,7 +171,7 @@ class DAL {
   }
 
   async getMultisigWalletMembers(multisigAddress) {
-    let memberAddresses = await multisigMembershipsRepo.getMembersByMultsigAccountAddress(multisigAddress);
+    let memberAddresses = await multisigMembershipsRepo.multsigAccountAddress(multisigAddress).get();
     if (isEmptyArray(memberAddresses)) {
       let error = new Error(
           `Address ${multisigAddress} is not registered as a multisig wallet`
@@ -232,7 +231,7 @@ class DAL {
   }
 
   async getTransaction(transactionId) {
-    const transaction = await transactionsRepo.getById(transactionId)
+    const transaction = await transactionsRepo.id(transactionId).get();
     if (!transaction) {
       let error = new Error(`Transaction ${transactionId} did not exist`);
       error.name = 'TransactionDidNotExistError';
@@ -271,12 +270,11 @@ class DAL {
   }
 
   async hasDelegate(walletAddress) {
-    let addressMatcher = {[delegatesTable.field.address]: walletAddress};
-    return await delegatesRepo.exists(addressMatcher);
+    return await delegatesRepo.address(walletAddress).exists();
   }
 
   async getDelegate(walletAddress) {
-    const delegate = await delegatesRepo.getByAddress(walletAddress);
+    const delegate = await delegatesRepo.address(walletAddress).get();
     if (!delegate) {
       let error = new Error(`Delegate ${walletAddress} did not exist`);
       error.name = 'DelegateDidNotExistError';

@@ -40,7 +40,7 @@ const multisigMembershipsRepo = (( tableName, ...primaryKeys) => {
         ...msmRepo,
         multsigAccountAddress : (address) => ({
             ...msmRepo.multsigAccountAddress(address),
-            get : msmRepo.multsigAccountAddress(address).get().map(ms => ms[primaryKeys[1]])
+            get : msmRepo.multsigAccountAddress(address).get().then(r => r. map(a => a[primaryKeys[1]]))
         })
     }
 })(multisig_membershipsTable.name, multisig_membershipsTable.field.multsigAccountAddress, multisig_membershipsTable.field.memberAddress);

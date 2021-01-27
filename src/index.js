@@ -1,7 +1,6 @@
-const { isEmptyArray} = require("./utils");
 const knex = require("../knex/knex")
 const crypto = require('crypto');
-const { firstOrDefault } = require("./utils")
+const { firstOrNull, isEmpty } = require("./utils")
 const { ballotsTable, multisig_membershipsTable } = require("../knex/ldpos-table-schema");
 const { areTablesEmpty }  = require("../knex/pg-helpers");
 const { accountsRepo, ballotsRepo, multisigMembershipsRepo, transactionsRepo, delegatesRepo } = require("./repository")
@@ -79,7 +78,7 @@ class DAL {
   }
 
   async getAccount(walletAddress) {
-    const account = firstOrDefault(await accountsRepo.address(walletAddress).get(), null);
+    const account = firstOrNull(await accountsRepo.address(walletAddress).get());
     if (!account) {
       let error = new Error(`Account ${walletAddress} did not exist`);
       error.name = 'AccountDidNotExistError';
@@ -173,7 +172,7 @@ class DAL {
 
   async getMultisigWalletMembers(multisigAddress) {
     let memberAddresses = await multisigMembershipsRepo.multsigAccountAddress(multisigAddress).get();
-    if (isEmptyArray(memberAddresses)) {
+    if (isEmpty(memberAddresses)) {
       let error = new Error(
           `Address ${multisigAddress} is not registered as a multisig wallet`
       );
@@ -232,7 +231,7 @@ class DAL {
   }
 
   async getTransaction(transactionId) {
-    const transaction = firstOrDefault(await transactionsRepo.id(transactionId).get(), null);
+    const transaction = firstOrNull(await transactionsRepo.id(transactionId).get());
     if (!transaction) {
       let error = new Error(`Transaction ${transactionId} did not exist`);
       error.name = 'TransactionDidNotExistError';
@@ -275,7 +274,7 @@ class DAL {
   }
 
   async getDelegate(walletAddress) {
-    const delegate = firstOrDefault(await delegatesRepo.address(walletAddress).get(), null);
+    const delegate = firstOrNull(await delegatesRepo.address(walletAddress).get());
     if (!delegate) {
       let error = new Error(`Delegate ${walletAddress} did not exist`);
       error.name = 'DelegateDidNotExistError';

@@ -1,4 +1,4 @@
-const {findMatchingRecords, updateMatchingRecords, matchFound, noMatchFound, insert, buildEqualityMatcherQuery } = require("../knex/knex-helpers");
+const {findMatchingRecords, updateMatchingRecords, matchFound, noMatchFound, insert, findMatchingRecordsCount, buildEqualityMatcherQuery } = require("../knex/knex-helpers");
 const {accountsTable, transactionsTable, blocksTable, delegatesTable, multisig_membershipsTable, ballotsTable} = require("../knex/ldpos-table-schema");
 const { upsert } = require("../knex/pg-helpers");
 
@@ -12,6 +12,7 @@ const repository = (tableName, ...primaryKeys) => {
             update: (updatedData, equalityMatcher = defaultMatcher) => updateMatchingRecords(tableName, equalityMatcher, updatedData),
             exists: (equalityMatcher = defaultMatcher) => matchFound(tableName, equalityMatcher),
             notExist: (equalityMatcher = defaultMatcher) => noMatchFound(tableName, equalityMatcher),
+            count: (equalityMatcher = defaultMatcher) => findMatchingRecordsCount(tableName, equalityMatcher),
         })
 
     const generateFieldOps = (fieldName) => ({

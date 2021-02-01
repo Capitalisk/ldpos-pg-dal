@@ -8,37 +8,24 @@ const buildEqualityMatcherQuery = (tableName, matcher) => {
     return Object.entries(matcher).reduce((query, [key, value]) => query.where(key, value), baseQuery);
 }
 
-const findMatchingRecords = (tableName, matcher) => {
-    return Promise.resolve(buildEqualityMatcherQuery(tableName, matcher))
-};
+const findMatchingRecords = (tableName, matcher) => Promise.resolve(buildEqualityMatcherQuery(tableName, matcher));
 
-const updateMatchingRecords = (tableName, matcher, updatedData) => {
+const updateMatchingRecords = (tableName, matcher, updatedData) =>
     Promise.resolve(
         buildEqualityMatcherQuery(tableName, matcher)
-            .update(updatedData));
-}
+            .update(updatedData))
 
 const findMatchingRecordsCount  = (tableName, matcher) =>
     Promise.resolve(
         buildEqualityMatcherQuery(tableName, matcher)
-            .count());
-
-const noMatchFound = (tableName, matcher) => {
-    return findMatchingRecordsCount(tableName, matcher)
-        .then((table) => firstOrDefault(table, { count: '0' }).count === 0);
-}
-
-const matchFound = (tableName, matcher) => {
-    return noMatchFound(tableName, matcher)
-        .then(noMatchFound => !noMatchFound);
-}
-
-const isTableEmpty = (tableName) =>
-    Promise.resolve(
-        knex
-            .table(tableName)
             .count()
-            .then((table) => firstOrDefault(table, {count: '0'}).count === 0),
+            .then((rows) => firstOrDefault(rows, { count: 0 }).count)
     );
+
+const noMatchFound = (tableName, matcher) => findMatchingRecordsCount(tableName, matcher).then((cnt) => cnt === 0)
+
+const matchFound = (tableName, matcher) => noMatchFound(tableName, matcher).then(noMatchFound => !noMatchFound)
+
+const isTableEmpty = (tableName) => noMatchFound(tableName, {})
 
 module.exports = { isTableEmpty, findMatchingRecordsCount, noMatchFound, matchFound, findMatchingRecords, updateMatchingRecords, insert, buildEqualityMatcherQuery }

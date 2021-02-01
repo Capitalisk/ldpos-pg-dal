@@ -10,6 +10,7 @@ class DAL {
         this.blocks = [];
         this.transactions = {};
         this.multisigMembers = {};
+        this.store = {};
     }
 
     async init(options) {
@@ -63,6 +64,18 @@ class DAL {
             })
         );
         return this;
+    }
+
+    async saveItem(key, value) {
+        this.store[key] = value;
+    }
+
+    async loadItem(key) {
+        return this.store[key];
+    }
+
+    async deleteItem(key) {
+        delete this.store[key];
     }
 
     async getNetworkSymbol() {
@@ -328,8 +341,12 @@ class DAL {
         return {...block};
     }
 
+    async hasBlock(id) {
+        return this.blocks.some(currentBlock => currentBlock.id === id);
+    }
+
     async getBlock(id) {
-        let block = this.blocks.find(candidateBlock => candidateBlock.id === id);
+        let block = this.blocks.find(currentBlock => currentBlock.id === id);
         if (!block) {
             let error = new Error(
                 `No block existed with ID ${id}`
@@ -412,7 +429,15 @@ class DAL {
 
         let inboundTransactions = [];
         for (let transaction of transactionList) {
-            if (transaction.recipientAddress === walletAddress && transaction.timestamp >= fromTimestamp) {
+            if (
+                transaction.recipientAddress === walletAddress &&
+                (
+                    fromTimestamp == null ||
+                    (
+                        order === 'desc' ? transaction.timestamp <= fromTimestamp : transaction.timestamp >= fromTimestamp
+                    )
+                )
+            ) {
                 inboundTransactions.push(transaction);
                 if (inboundTransactions.length >= limit) {
                     break;
@@ -428,7 +453,15 @@ class DAL {
         let transactionList = this.sortByProperty(Object.values(this.transactions), 'timestamp', order);
         let outboundTransactions = [];
         for (let transaction of transactionList) {
-            if (transaction.senderAddress === walletAddress && transaction.timestamp >= fromTimestamp) {
+            if (
+                transaction.senderAddress === walletAddress &&
+                (
+                    fromTimestamp == null ||
+                    (
+                        order === 'desc' ? transaction.timestamp <= fromTimestamp : transaction.timestamp >= fromTimestamp
+                    )
+                )
+            ) {
                 outboundTransactions.push(transaction);
                 if (outboundTransactions.length >= limit) {
                     break;

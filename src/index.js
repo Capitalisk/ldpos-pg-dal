@@ -1,16 +1,16 @@
 const knex = require("../knex/knex")
 const crypto = require('crypto');
 const { firstOrNull, isEmpty } = require("./utils")
-const { ballotsTable, multisig_membershipsTable } = require("../knex/ldpos-table-schema");
+const { ballotsTable, multisig_membershipsTable, blocksTable, accountsTable, delegatesTable, transactionsTable } = require("../knex/ldpos-table-schema");
 const { areTablesEmpty }  = require("../knex/pg-helpers");
-const { accountsRepo, ballotsRepo, multisigMembershipsRepo, transactionsRepo, delegatesRepo } = require("./repository")
+const { accountsRepo, ballotsRepo, multisigMembershipsRepo, transactionsRepo, delegatesRepo, blocksRepo } = require("./repository")
 const DEFAULT_NETWORK_SYMBOL = 'ldpos';
 
 // todo - constructor and init can be refined
 class DAL {
 
    constructor() {
-
+     this.store = {};
    }
 
   async init(options) {
@@ -68,6 +68,18 @@ class DAL {
     return this;
   }
 
+  async saveItem(key, value) {
+    this.store[key] = value;
+  }
+
+  async loadItem(key) {
+    return this.store[key];
+  }
+
+  async deleteItem(key) {
+    delete this.store[key];
+  }
+
   async getNetworkSymbol() {
     return this.networkSymbol;
   }
@@ -75,6 +87,11 @@ class DAL {
 
   async upsertAccount(account) {
     await accountsRepo.upsert(account);
+  }
+
+
+  async hasAccount(walletAddress) {
+    return await accountsRepo.address(walletAddress).exists();
   }
 
   async getAccount(walletAddress) {
@@ -93,20 +110,33 @@ class DAL {
   }
 
   async getAccountVotes(voterAddress) {
-
+     const voterAddressMatcher = {[ballotsTable.field.voterAddress]: voterAddress};
+     if (await ballotsRepo.notExist(voterAddressMatcher)) {
+       let error = new Error(`Voter ${voterAddress} did not exist`);
+       error.name = 'VoterAccountDidNotExistError';
+       error.type = 'InvalidActionError';
+       throw error;
+     }
+    const activeVotesMatcher = {
+      [ballotsTable.field.active]: true,
+      [ballotsTable.field.type]: "vote",
+      [ballotsTable.field.voterAddress]: voterAddress
+    }
+    const ballots = await ballotsRepo.get(activeVotesMatcher);
+    return ballots.map(ballot => ballot[ballotsTable.field.delegateAddress])
   }
 
   async vote(ballot) {
     const { id, voterAddress, delegateAddress } = ballot;
     if (await ballotsRepo.id(id).notExist()) {
 
-      const activeVotesMatcher = {
+      const existingVotesMatcher = {
         [ballotsTable.field.active]: true,
         [ballotsTable.field.type]: "vote",
         [ballotsTable.field.voterAddress]: voterAddress,
         [ballotsTable.field.delegateAddress]: delegateAddress,
       }
-      const hasExistingVote = await ballotsRepo.exists(activeVotesMatcher);
+      const hasExistingVote = await ballotsRepo.exists(existingVotesMatcher);
 
       if (hasExistingVote) {
         let error = new Error(
@@ -116,21 +146,54 @@ class DAL {
         error.type = 'InvalidActionError';
         throw error;
       }
-      const activeUnvotesMatcher = {
+      const existingUnvotesMatcher = {
         [ballotsTable.field.active]: true,
         [ballotsTable.field.type]: "unvote",
         [ballotsTable.field.voterAddress]: voterAddress,
         [ballotsTable.field.delegateAddress]: delegateAddress,
       }
-      const activeBallot = { [ballotsTable.field.active] : false}
-      await ballotsRepo.update(activeBallot,activeUnvotesMatcher);
+      const markInactive = { [ballotsTable.field.active] : false}
+      await ballotsRepo.update(markInactive, existingUnvotesMatcher);
     }
     ballot = { ...ballot,  type: 'vote', active: true}
     await ballotsRepo.upsert(ballot);
   }
 
   async unvote(ballot) {
+    const { id, voterAddress, delegateAddress } = ballot;
+    if (await ballotsRepo.id(id).notExist()) {
 
+      const existingVotesMatcher = {
+        [ballotsTable.field.active]: true,
+        [ballotsTable.field.type]: "vote",
+        [ballotsTable.field.voterAddress]: voterAddress,
+        [ballotsTable.field.delegateAddress]: delegateAddress,
+      }
+
+      const existingUnvotesMatcher = {
+        [ballotsTable.field.active]: true,
+        [ballotsTable.field.type]: "unvote",
+        [ballotsTable.field.voterAddress]: voterAddress,
+        [ballotsTable.field.delegateAddress]: delegateAddress,
+      }
+
+      const hasNoExistingVotes = await ballotsRepo.notExist(existingVotesMatcher);
+      const hasExistingUnvotes = await ballotsRepo.exists(existingUnvotesMatcher);
+
+      if (hasNoExistingVotes || hasExistingUnvotes) {
+        let error = new Error(
+            `Voter ${voterAddress} could not unvote delegate ${delegateAddress} because it was not voting for it`
+        );
+        error.name = 'VoterNotVotingForDelegateError';
+        error.type = 'InvalidActionError';
+        throw error;
+      }
+
+      const markInactive = { [ballotsTable.field.active] : false}
+      await ballotsRepo.update(markInactive, existingVotesMatcher);
+    }
+    ballot = { ...ballot,  type: 'unvote', active: true}
+    await ballotsRepo.upsert(ballot);
   }
 
   async registerMultisigWallet(multisigAddress, memberAddresses, requiredSignatureCount) {
@@ -183,7 +246,9 @@ class DAL {
     return [...memberAddresses];
   }
 
+  // Need to check based on what get last block
   async getLastBlock() {
+
   }
 
   async getBlocksFromHeight(height, limit) {
@@ -203,31 +268,68 @@ class DAL {
   }
 
   async getBlockAtHeight(height) {
-
+    let block = await this.getSignedBlockAtHeight(height);
+    return this.simplifyBlock(block);
   }
 
+  // todo : Need to check this again, if this is index based or field based
   async getSignedBlockAtHeight(height) {
+    const heightMatcher = { [blocksTable.field.height] : height}
+    const block = firstOrNull(await blocksRepo.get(heightMatcher));
+    if (!block) {
+      let error = new Error(
+          `No block existed at height ${height}`
+      );
+      error.name = 'BlockDidNotExistError';
+      error.type = 'InvalidActionError';
+      throw error;
+    }
+    return {...block};
+  }
 
+  async hasBlock(id) {
+    return await blocksRepo.id(id).exists();
   }
 
   async getBlock(id) {
-
+     const block = firstOrNull(blocksRepo.id(id).get());
+    if (!block) {
+      let error = new Error(
+          `No block existed with ID ${id}`
+      );
+      error.name = 'BlockDidNotExistError';
+      error.type = 'InvalidActionError';
+      throw error;
+    }
+    return {...block};
   }
 
   async getBlocksByTimestamp(offset, limit, order) {
 
   }
 
+  // todo for update operations, return number of records updated
+  // todo check what are index based operations
+  // todo what is synched field being used for
   async upsertBlock(block, synched) {
-
+     const { transactions } = block;
+     await blocksRepo.upsert(block);
+     for ( const [index, transaction] of transactions.entries()) {
+       const updatedTransaction = {
+         ...transaction,
+         blockId: block.id,
+         indexInBlock: index
+       }
+       await transactionsRepo.upsert(updatedTransaction);
+     }
   }
 
   async getMaxBlockHeight() {
-
+     return await blocksRepo.count();
   }
 
   async hasTransaction(transactionId) {
-
+     return await transactionsRepo.id(transactionId).exists();
   }
 
   async getTransaction(transactionId) {
@@ -246,6 +348,9 @@ class DAL {
   }
 
   async getTransactionsFromBlock(blockId, offset, limit) {
+    if (offset == null) {
+      offset = 0;
+    }
 
   }
 
@@ -258,11 +363,19 @@ class DAL {
   }
 
   async getInboundTransactionsFromBlock(walletAddress, blockId) {
-
+     const recipientWalletAddressMatcher = {
+       [transactionsTable.field.recipientAddress] : walletAddress,
+       [transactionsTable.field.blockId] : blockId
+     }
+     return await transactionsRepo.get(recipientWalletAddressMatcher);
   }
 
   async getOutboundTransactionsFromBlock(walletAddress, blockId) {
-
+    const senderWalletAddressMatcher = {
+      [transactionsTable.field.senderAddress] : walletAddress,
+      [transactionsTable.field.blockId] : blockId
+    }
+    return await transactionsRepo.get(senderWalletAddressMatcher);
   }
 
   async upsertDelegate(delegate) {
@@ -289,7 +402,9 @@ class DAL {
   }
 
   simplifyBlock(signedBlock) {
-
+    let { transactions, forgerSignature, signatures, ...simpleBlock } = signedBlock;
+    simpleBlock.numberOfTransactions = transactions.length;
+    return simpleBlock;
   }
 }
 

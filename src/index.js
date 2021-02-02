@@ -106,7 +106,10 @@ class DAL {
   }
 
   async getAccountsByBalance(offset, limit, order) {
-
+     return accountsRepo.buildBaseQuery()
+         .orderBy(accountsTable.field.balance, order)
+         .offset(offset)
+         .limit(limit)
   }
 
   async getAccountVotes(voterAddress) {
@@ -248,23 +251,49 @@ class DAL {
 
   // Need to check based on what get last block
   async getLastBlock() {
-
+     const matchingBlocks = await blocksRepo.buildBaseQuery()
+         .orderBy(blocksTable.field.height, "desc")
+         .limit(1);
+     return firstOrNull(matchingBlocks)
   }
 
   async getBlocksFromHeight(height, limit) {
-
+    let blocks = await this.getSignedBlocksFromHeight(height, limit)
+    return blocks.map(this.simplifyBlock);
   }
 
   async getSignedBlocksFromHeight(height, limit) {
-
+    // todo : is it possible that this scenario might come
+     if (height < 1) {
+      height = 1;
+     }
+     let offset = height - 1;
+     return blocksRepo.buildBaseQuery()
+         .offset(offset)
+         .limit(limit);
   }
 
   async getLastBlockAtTimestamp(timestamp) {
-
+    const blocks = await blocksRepo.buildBaseQuery()
+                        .where(blocksTable.field.timestamp, "<=", timestamp);
+    const block = firstOrNull(blocks);
+    if (!block) {
+      let error = new Error(
+          `No block existed with timestamp less than or equal to ${timestamp}`
+      );
+      error.name = 'BlockDidNotExistError';
+      error.type = 'InvalidActionError';
+      throw error;
+    }
+    return this.simplifyBlock(block);
   }
 
   async getBlocksBetweenHeights(fromHeight, toHeight, limit) {
-
+    const blocks = await blocksRepo.buildBaseQuery()
+        .where(blocksTable.field.height, ">", fromHeight)
+        .andWhere(blocksTable.field.height, "<=", toHeight)
+        .limit(limit);
+  return blocks.map(this.simplifyBlock);
   }
 
   async getBlockAtHeight(height) {
@@ -305,7 +334,11 @@ class DAL {
   }
 
   async getBlocksByTimestamp(offset, limit, order) {
-
+     const blocks = await blocksRepo.buildBaseQuery()
+         .orderBy(blocksTable.field.timestamp, order)
+         .offset(offset)
+         .limit(limit);
+     return blocks.map(this.simplifyBlock)
   }
 
   // todo for update operations, return number of records updated
@@ -313,7 +346,7 @@ class DAL {
   // todo what is synched field being used for
   async upsertBlock(block, synched) {
      const { transactions } = block;
-     await blocksRepo.upsert(block);
+     await blocksRepo.upsert(block, blocksTable.field.height);
      for ( const [index, transaction] of transactions.entries()) {
        const updatedTransaction = {
          ...transaction,
@@ -344,22 +377,54 @@ class DAL {
   }
 
   async getTransactionsByTimestamp(offset, limit, order) {
-
+     return transactionsRepo.buildBaseQuery()
+         .orderBy(transactionsTable.field.timestamp, order)
+         .offset(offset)
+         .limit(limit)
   }
 
   async getTransactionsFromBlock(blockId, offset, limit) {
     if (offset == null) {
       offset = 0;
     }
+    const baseQuery = transactionsRepo.buildBaseQuery()
+        .where(transactionsTable.field.blockId, blockId)
+        .andWhere(transactionsTable.field.indexInBlock, ">=", offset)
 
+    if (limit == null) {
+      return baseQuery;
+    }
+    return baseQuery.limit(limit);
   }
 
   async getInboundTransactions(walletAddress, fromTimestamp, limit, order) {
-
+     const transactionsQuery = transactionsRepo.buildBaseQuery()
+         .orderBy(transactionsTable.field.timestamp, order)
+         .where(transactionsTable.field.recipientAddress, walletAddress)
+         .limit(limit)
+      if (fromTimestamp != null ) {
+          if (order === "desc") {
+            transactionsQuery.andWhere(transactionsTable.field.timestamp, "<=", fromTimestamp)
+          } else {
+            transactionsQuery.andWhere(transactionsTable.field.timestamp, ">=", fromTimestamp)
+          }
+      }
+      return transactionsQuery;
   }
 
   async getOutboundTransactions(walletAddress, fromTimestamp, limit, order) {
-
+    const transactionsQuery = transactionsRepo.buildBaseQuery()
+        .orderBy(transactionsTable.field.timestamp, order)
+        .where(transactionsTable.field.senderAddress, walletAddress)
+        .limit(limit)
+    if (fromTimestamp != null ) {
+      if (order === "desc") {
+        transactionsQuery.andWhere(transactionsTable.field.timestamp, "<=", fromTimestamp)
+      } else {
+        transactionsQuery.andWhere(transactionsTable.field.timestamp, ">=", fromTimestamp)
+      }
+    }
+    return transactionsQuery;
   }
 
   async getInboundTransactionsFromBlock(walletAddress, blockId) {
@@ -398,7 +463,11 @@ class DAL {
   }
 
   async getDelegatesByVoteWeight(offset, limit, order) {
-
+     return delegatesRepo.buildBaseQuery()
+         .whereNot(delegatesTable.field.voteWeight, "0")
+         .orderBy(delegatesTable.field.voteWeight, order)
+         .offset(offset)
+         .limit(limit)
   }
 
   simplifyBlock(signedBlock) {

@@ -23,7 +23,7 @@ const repository = (tableName, ...primaryKeys) => {
 
     return {
         insert: (data) => insert(tableName, data),
-        upsert: (data, byColumns = primaryKeys) => upsert(tableName, data, byColumns),
+        upsert: (data, byColumns = primaryKeys) => upsert(tableName, data, [byColumns].flat()),
         ...basicRepositoryOps({}),
         ...primaryKeyOps,
         buildBaseQuery: (equalityMatcher = {}) => buildEqualityMatcherQuery(tableName, equalityMatcher),

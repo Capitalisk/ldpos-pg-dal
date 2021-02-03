@@ -6,7 +6,7 @@ exports.up = function(knex) {
             tbl.string(table.field.id, 40).unique();
             tbl.bigInteger(table.field.height).notNullable().unique();
             tbl.bigInteger(table.field.timestamp).notNullable();
-            tbl.string(table.field.previousBlockId, 40).notNullable();
+            tbl.string(table.field.previousBlockId, 40).nullable();
             tbl.string(table.field.forgerAddress, 50).notNullable();
             tbl.string(table.field.forgingPublicKey, 64).notNullable();
             tbl.string(table.field.nextForgingPublicKey, 64).notNullable();

@@ -113,8 +113,7 @@ class DAL {
   }
 
   async getAccountVotes(voterAddress) {
-     const voterAddressMatcher = {[ballotsTable.field.voterAddress]: voterAddress};
-     if (await ballotsRepo.notExist(voterAddressMatcher)) {
+     if (await accountsRepo.address(voterAddress).notExist()) {
        let error = new Error(`Voter ${voterAddress} did not exist`);
        error.name = 'VoterAccountDidNotExistError';
        error.type = 'InvalidActionError';
@@ -265,7 +264,7 @@ class DAL {
   async getSignedBlocksFromHeight(height, limit) {
     // todo : is it possible that this scenario might come
      if (height < 1) {
-      height = 1;
+        height = 1;
      }
      let offset = height - 1;
      return blocksRepo.buildBaseQuery()
@@ -344,6 +343,7 @@ class DAL {
   // todo for update operations, return number of records updated
   // todo check what are index based operations
   // todo what is synched field being used for
+  // todo check if height based upsert can be replaced with id
   async upsertBlock(block, synched) {
      const { transactions } = block;
      await blocksRepo.upsert(block, blocksTable.field.height);

@@ -4,7 +4,7 @@ exports.up = function(knex) {
     return Promise.resolve(
         knex.schema.createTable(tableName, (tbl) => {
             tbl.string(table.field.id, 44).unique();
-            tbl.bigInteger(table.field.height).notNullable();
+            tbl.bigInteger(table.field.height).notNullable().unique();
             tbl.bigInteger(table.field.timestamp).notNullable();
             tbl.string(table.field.previousBlockId, 44).notNullable();
             tbl.string(table.field.forgerAddress, 80).notNullable();

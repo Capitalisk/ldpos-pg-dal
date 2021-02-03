@@ -36,7 +36,7 @@ const transactionsRepo = repository(transactionsTable.name, transactionsTable.fi
 const blocksRepo = repository(blocksTable.name, blocksTable.field.id);
 const delegatesRepo = repository(delegatesTable.name, delegatesTable.field.address);
 const multisigMembershipsRepo = (( tableName, ...primaryKeys) => {
-    const msmRepo = repository(tableName, primaryKeys);
+    const msmRepo = repository(tableName, ...primaryKeys);
     return {
         ...msmRepo,
         multsigAccountAddress : (address) => ({

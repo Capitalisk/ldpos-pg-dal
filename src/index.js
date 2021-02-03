@@ -257,19 +257,19 @@ class DAL {
   }
 
   async getBlocksFromHeight(height, limit) {
-    let blocks = await this.getSignedBlocksFromHeight(height, limit)
-    return blocks.map(this.simplifyBlock);
+    // todo : is it possible that this scenario might come
+    if (height < 1) {
+        height = 1;
+    }
+    let offset = height - 1;
+    return blocksRepo.buildBaseQuery()
+        .offset(offset)
+        .limit(limit);
   }
 
   async getSignedBlocksFromHeight(height, limit) {
-    // todo : is it possible that this scenario might come
-     if (height < 1) {
-        height = 1;
-     }
-     let offset = height - 1;
-     return blocksRepo.buildBaseQuery()
-         .offset(offset)
-         .limit(limit);
+     const blocks = await this.getBlocksFromHeight(height, limit)
+    return Promise.all(blocks.map(this.simplifyBlock));
   }
 
   async getLastBlockAtTimestamp(timestamp) {
@@ -284,24 +284,17 @@ class DAL {
       error.type = 'InvalidActionError';
       throw error;
     }
-    return this.simplifyBlock(block);
+    return { ... block}
   }
 
   async getBlocksBetweenHeights(fromHeight, toHeight, limit) {
-    const blocks = await blocksRepo.buildBaseQuery()
+    return blocksRepo.buildBaseQuery()
         .where(blocksTable.field.height, ">", fromHeight)
         .andWhere(blocksTable.field.height, "<=", toHeight)
         .limit(limit);
-  return blocks.map(this.simplifyBlock);
   }
 
   async getBlockAtHeight(height) {
-    let block = await this.getSignedBlockAtHeight(height);
-    return this.simplifyBlock(block);
-  }
-
-  // todo : Need to check this again, if this is index based or field based
-  async getSignedBlockAtHeight(height) {
     const heightMatcher = { [blocksTable.field.height] : height}
     const block = firstOrNull(await blocksRepo.get(heightMatcher));
     if (!block) {
@@ -312,7 +305,13 @@ class DAL {
       error.type = 'InvalidActionError';
       throw error;
     }
-    return {...block};
+    return { ... block};
+  }
+
+  // todo : Need to check this again, if this is index based or field based
+  async getSignedBlockAtHeight(height) {
+    const block = await this.getBlockAtHeight(height);
+    return await this.simplifyBlock(block);
   }
 
   async hasBlock(id) {
@@ -333,11 +332,10 @@ class DAL {
   }
 
   async getBlocksByTimestamp(offset, limit, order) {
-     const blocks = await blocksRepo.buildBaseQuery()
+     return blocksRepo.buildBaseQuery()
          .orderBy(blocksTable.field.timestamp, order)
          .offset(offset)
          .limit(limit);
-     return blocks.map(this.simplifyBlock)
   }
 
   // todo for update operations, return number of records updated
@@ -346,12 +344,13 @@ class DAL {
   // todo check if height based upsert can be replaced with id
   async upsertBlock(block, synched) {
      const { transactions, ...pureBlock } = block;
+     pureBlock[blocksTable.field.numberOfTransactions] = transactions? transactions.length : 0;
      await blocksRepo.upsert(pureBlock, blocksTable.field.height);
      for ( const [index, transaction] of transactions.entries()) {
        const updatedTransaction = {
          ...transaction,
-         blockId: block.id,
-         indexInBlock: index
+         [transactionsTable.field.blockId]: block.id,
+         [transactionsTable.field.indexInBlock]: index
        }
        await transactionsRepo.upsert(updatedTransaction);
      }
@@ -470,9 +469,10 @@ class DAL {
          .limit(limit)
   }
 
-  simplifyBlock(signedBlock) {
-    let { transactions, forgerSignature, signatures, ...simpleBlock } = signedBlock;
-    simpleBlock.numberOfTransactions = transactions.length;
+  async simplifyBlock(signedBlock) {
+    let { forgerSignature, signatures, ...simpleBlock } = signedBlock;
+    const blockIdMatcher = { [transactionsTable.field.blockId] : signedBlock.id };
+    simpleBlock.numberOfTransactions = await transactionsRepo.count(blockIdMatcher);
     return simpleBlock;
   }
 }

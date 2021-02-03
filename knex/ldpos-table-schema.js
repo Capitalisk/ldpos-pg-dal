@@ -52,7 +52,8 @@ module.exports = {
             nextForgingKeyIndex: "nextForgingKeyIndex",
             forgerSignature: "forgerSignature",
             signatures: "signatures",
-            synched: "synched"
+            synched: "synched",
+            numberOfTransactions : "numberOfTransactions"
         }
     },
     ballotsTable : {

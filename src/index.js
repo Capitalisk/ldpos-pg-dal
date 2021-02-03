@@ -78,13 +78,12 @@ class DAL {
 
   async loadItem(key) {
     const keyValuePair = firstOrNull(await storeRepo.key(key).get());
-    return keyValuePair[storeTable.field.value];
+    return keyValuePair ? keyValuePair[storeTable.field.value] : null;
   }
 
   async getNetworkSymbol() {
     return this.networkSymbol;
   }
-
 
   async upsertAccount(account) {
     await accountsRepo.upsert(account);
@@ -346,8 +345,8 @@ class DAL {
   // todo what is synched field being used for
   // todo check if height based upsert can be replaced with id
   async upsertBlock(block, synched) {
-     const { transactions } = block;
-     await blocksRepo.upsert(block, blocksTable.field.height);
+     const { transactions, ...pureBlock } = block;
+     await blocksRepo.upsert(pureBlock, blocksTable.field.height);
      for ( const [index, transaction] of transactions.entries()) {
        const updatedTransaction = {
          ...transaction,

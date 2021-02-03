@@ -13,7 +13,10 @@ module.exports = {
             nextSigKeyIndex: "nextSigKeyIndex",
             requiredSignatureCount: "requiredSignatureCount",
             updateHeight: "updateHeight",
-            lastTransactionTimestamp: "lastTransactionTimestamp"
+            lastTransactionTimestamp: "lastTransactionTimestamp",
+            nextForgingPublicKey: "nextForgingPublicKey",
+            nextMultisigPublicKey: "nextMultisigPublicKey",
+            nextSigPublicKey: "nextSigPublicKey"
         }
     },
     transactionsTable : {

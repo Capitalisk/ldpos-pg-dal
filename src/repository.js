@@ -1,5 +1,5 @@
 const {findMatchingRecords, updateMatchingRecords, matchFound, noMatchFound, insert, findMatchingRecordsCount, buildEqualityMatcherQuery } = require("../knex/knex-helpers");
-const {accountsTable, transactionsTable, blocksTable, delegatesTable, multisig_membershipsTable, ballotsTable} = require("../knex/ldpos-table-schema");
+const {accountsTable, transactionsTable, blocksTable, delegatesTable, multisig_membershipsTable, ballotsTable, storeTable} = require("../knex/ldpos-table-schema");
 const { upsert } = require("../knex/pg-helpers");
 
 // todo - advanced matcher should be implemented based on requirement
@@ -45,6 +45,6 @@ const multisigMembershipsRepo = (( tableName, ...primaryKeys) => {
         })
     }
 })(multisig_membershipsTable.name, multisig_membershipsTable.field.multsigAccountAddress, multisig_membershipsTable.field.memberAddress);
+const storeRepo = repository(storeTable.name, storeTable.field.key);
 
-
-module.exports = { accountsRepo, transactionsRepo, blocksRepo, delegatesRepo, multisigMembershipsRepo, ballotsRepo }
+module.exports = { accountsRepo, transactionsRepo, blocksRepo, delegatesRepo, multisigMembershipsRepo, ballotsRepo, storeRepo }

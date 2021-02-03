@@ -10,6 +10,8 @@ const buildEqualityMatcherQuery = (tableName, matcher) => {
 
 const findMatchingRecords = (tableName, matcher) => Promise.resolve(buildEqualityMatcherQuery(tableName, matcher));
 
+const deleteMatchingRecords = (tableName, matcher) => Promise.resolve(buildEqualityMatcherQuery(tableName, matcher).delete());
+
 const updateMatchingRecords = (tableName, matcher, updatedData) =>
     Promise.resolve(
         buildEqualityMatcherQuery(tableName, matcher)

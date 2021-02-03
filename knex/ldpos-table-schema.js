@@ -12,7 +12,8 @@ module.exports = {
             sigPublicKey: "sigPublicKey",
             nextSigKeyIndex: "nextSigKeyIndex",
             requiredSignatureCount: "requiredSignatureCount",
-            updateHeight: "updateHeight"
+            updateHeight: "updateHeight",
+            lastTransactionTimestamp: "lastTransactionTimestamp"
         }
     },
     transactionsTable : {
@@ -74,6 +75,13 @@ module.exports = {
         field: {
             multsigAccountAddress: "multsigAccountAddress",
             memberAddress: "memberAddress"
+        }
+    },
+    storeTable : {
+        name: "store",
+        field : {
+            key: "key",
+            value: "value"
         }
     }
 }

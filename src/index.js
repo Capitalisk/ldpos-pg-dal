@@ -1,31 +1,32 @@
 const knex = require("../knex/knex")
 const crypto = require('crypto');
 const { firstOrNull, isEmpty } = require("./utils")
-const { ballotsTable, multisig_membershipsTable, blocksTable, accountsTable, delegatesTable, transactionsTable } = require("../knex/ldpos-table-schema");
+const { ballotsTable, multisig_membershipsTable, blocksTable, accountsTable, delegatesTable, transactionsTable, storeTable } = require("../knex/ldpos-table-schema");
 const { areTablesEmpty }  = require("../knex/pg-helpers");
-const { accountsRepo, ballotsRepo, multisigMembershipsRepo, transactionsRepo, delegatesRepo, blocksRepo } = require("./repository")
+const { accountsRepo, ballotsRepo, multisigMembershipsRepo, transactionsRepo, delegatesRepo, blocksRepo, storeRepo } = require("./repository")
 const DEFAULT_NETWORK_SYMBOL = 'ldpos';
-
+const ID_BYTE_SIZE = 20;
 // todo - constructor and init can be refined
 class DAL {
 
    constructor() {
-     this.store = {};
+
    }
 
   async init(options) {
     await knex.migrate.latest();
-    if (await areTablesEmpty()) {
+
       let {genesis} = options;
       let {accounts} = genesis;
       let multisigWalletList = genesis.multisigWallets || [];
       this.networkSymbol = genesis.networkSymbol || DEFAULT_NETWORK_SYMBOL;
-
+    if (await areTablesEmpty()) {
       await Promise.all(
           accounts.map(async (accountInfo) => {
             let {votes, ...accountWithoutVotes} = accountInfo;
             let account = {
               ...accountWithoutVotes,
+              type: 'sig',
               updateHeight: 0
             };
             await this.upsertAccount(account);
@@ -42,7 +43,7 @@ class DAL {
         let {votes} = accountInfo;
         for (let delegateAddress of votes) {
           await this.vote({
-            id: crypto.randomBytes(32).toString('base64'),
+            id: crypto.randomBytes(ID_BYTE_SIZE).toString('hex'),
             voterAddress: accountInfo.address,
             delegateAddress
           });
@@ -65,19 +66,19 @@ class DAL {
           })
       );
     }
-    return this;
   }
 
   async saveItem(key, value) {
-    this.store[key] = value;
+     const item = {
+       [storeTable.field.key]: key,
+       [storeTable.field.value] : value
+     }
+    await storeRepo.upsert(item)
   }
 
   async loadItem(key) {
-    return this.store[key];
-  }
-
-  async deleteItem(key) {
-    delete this.store[key];
+    const keyValuePair = firstOrNull(await storeRepo.key(key).get());
+    return keyValuePair[storeTable.field.value];
   }
 
   async getNetworkSymbol() {

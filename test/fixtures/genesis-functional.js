@@ -2,55 +2,55 @@ const genesis = {
   "networkSymbol": "ldpos",
   "accounts": [
     {
-      "address": "092188ca7934529fc624acf62f2b6ce96c3167424f54aa467428f3d0dcdcc60cldpos",
-      "forgingPublicKey": "mw26bjrYNk+8hIdx2WRwLJWrSqdnjaKSrhii0lQBtUU=",
+      "address": "ldposfacd5ebf967ebd87436bd5932a58168b9a1151e3",
+      "forgingPublicKey": "351b1c997046484dc443e2f728a4479d8523a3b7f088c577f628177e639ef2b1",
       "nextForgingKeyIndex": 0,
-      "multisigPublicKey": "3F3oIqWtMpJcf/hLIpCIsbRmCQYYLLVEn4wsmICXKXM=",
+      "multisigPublicKey": "3ee9d5e74aa178ed7c6af4feb77430973c279a751be162cd3f669144b4a72fa2",
       "nextMultisigKeyIndex": 0,
-      "sigPublicKey": "CSGIynk0Up/GJKz2Lyts6WwxZ0JPVKpGdCjz0Nzcxgw=",
+      "sigPublicKey": "facd5ebf967ebd87436bd5932a58168b9a1151e3ccfbb9bda9a8ab6cb546675e",
       "nextSigKeyIndex": 0,
       "balance": "9999900000000000",
-      "votes": ["092188ca7934529fc624acf62f2b6ce96c3167424f54aa467428f3d0dcdcc60cldpos"]
+      "votes": ["ldposfacd5ebf967ebd87436bd5932a58168b9a1151e3"]
     },
     {
-      "address": "660c22683a6d466f66740042677ed1adc8bb723bd871c32c93f52eaa224a817fldpos",
-      "forgingPublicKey": "VyMOMKKy63KLCA1YkqTjaBZnlm5wdk0TOVu2LmAfAK0=",
+      "address": "ldpos1f4db4c3ae469a987776493d47a81a70c245ed00",
+      "forgingPublicKey": "54ec095ccd226f0684bc0409ee488900a583e8cd82fd3a539972ae49f97dee69",
       "nextForgingKeyIndex": 0,
-      "multisigPublicKey": "xreuBmWlBA/6og9dXjIkiiH7BHISFRBXIks3AFAzrmc=",
+      "multisigPublicKey": "a2d6e3024059ca92409911e0ad8308011f39c9278662f27ba7e32e1d777326dd",
       "nextMultisigKeyIndex": 0,
-      "sigPublicKey": "ZgwiaDptRm9mdABCZ37Rrci7cjvYccMsk/UuqiJKgX8=",
+      "sigPublicKey": "1f4db4c3ae469a987776493d47a81a70c245ed00c9d4dd7ea5e6f39bde04a3d5",
       "nextSigKeyIndex": 0,
       "balance": "100000000000",
-      "votes": ["092188ca7934529fc624acf62f2b6ce96c3167424f54aa467428f3d0dcdcc60cldpos"]
+      "votes": ["ldposfacd5ebf967ebd87436bd5932a58168b9a1151e3"]
     },
     {
-      "address": "859d1e3fe282683bc9e88475cb3389551f72e9b70c9436aea3acd757c2718326ldpos",
-      "forgingPublicKey": "y8jXJxfY+/zJ1QWxyJysm4dDOhKoKUapdW8Ts6i51NE=",
+      "address": "ldpos367429ac94d4204823fba7e79076d794ee0144c5",
+      "forgingPublicKey": "3fe1987760f452b9750a10cebbb5475d09e1d9e75f9504a3d5a721dd38b6de7d",
       "nextForgingKeyIndex": 0,
-      "multisigPublicKey": "KM9MknfcNTNiTv69lqivBRl0PaRrghya8AZ79myQfzI=",
+      "multisigPublicKey": "0e4080ae13026c64806c9d0ac19f9b57ff7cad433aca0bb45c09ad5fdd2c3f52",
       "nextMultisigKeyIndex": 0,
-      "sigPublicKey": "hZ0eP+KCaDvJ6IR1yzOJVR9y6bcMlDauo6zXV8JxgyY=",
+      "sigPublicKey": "367429ac94d4204823fba7e79076d794ee0144c524afa5992ed22d793b630215",
       "nextSigKeyIndex": 0,
       "balance": "20000000000",
-      "votes": ["092188ca7934529fc624acf62f2b6ce96c3167424f54aa467428f3d0dcdcc60cldpos"]
+      "votes": ["ldposfacd5ebf967ebd87436bd5932a58168b9a1151e3"]
     },
     {
-      "address": "ea87e8bf7de70528b70bd9ef4d22c2169815bd2e9a1b35ce7905cb2255cbc2celdpos",
-      "forgingPublicKey": "8+hwAt7OTMyfZtsj3ZmJSZj7RDxGiFnUyOgbI9JN6WA=",
+      "address": "ldpos3689799460f1aa80689bfd81bbd20314b616b88e",
+      "forgingPublicKey": "b8b98a0377834a874de371720c02de73cabf8ed9680aebf65c752754639b5709",
       "nextForgingKeyIndex": 0,
-      "multisigPublicKey": "Z8W38bLWd8ppg3xP4EipnggM2c3Z/35/NaNm8TpsthY=",
+      "multisigPublicKey": "55425dcce138c051f77eb99ee6510e28a54c47464a4461bf4a047fc6708467f1",
       "nextMultisigKeyIndex": 0,
-      "sigPublicKey": "6ofov33nBSi3C9nvTSLCFpgVvS6aGzXOeQXLIlXLws4=",
+      "sigPublicKey": "3689799460f1aa80689bfd81bbd20314b616b88e7eaf45f732b06883dc09486d",
       "nextSigKeyIndex": 0,
       "balance": "30000000000",
-      "votes": ["092188ca7934529fc624acf62f2b6ce96c3167424f54aa467428f3d0dcdcc60cldpos"]
+      "votes": ["ldposfacd5ebf967ebd87436bd5932a58168b9a1151e3"]
     }
   ],
   "multisigWallets": [
     {
-      "address": "ea87e8bf7de70528b70bd9ef4d22c2169815bd2e9a1b35ce7905cb2255cbc2celdpos",
+      "address": "ldpos3689799460f1aa80689bfd81bbd20314b616b88e",
       "requiredSignatureCount": 2,
-      "members": ["859d1e3fe282683bc9e88475cb3389551f72e9b70c9436aea3acd757c2718326ldpos", "660c22683a6d466f66740042677ed1adc8bb723bd871c32c93f52eaa224a817fldpos"]
+      "members": ["ldpos367429ac94d4204823fba7e79076d794ee0144c5", "ldpos1f4db4c3ae469a987776493d47a81a70c245ed00"]
     }
   ]
 }

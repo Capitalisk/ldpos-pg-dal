@@ -36,7 +36,20 @@ module.exports = {
             senderSignatureHash: "senderSignatureHash",
             signatures: "signatures",
             blockId: "blockId",
-            indexInBlock: "indexInBlock"
+            indexInBlock: "indexInBlock",
+            delegateAddress: "delegateAddress",
+            newForgingPublicKey: "newForgingPublicKey",
+            newNextForgingPublicKey: "newNextForgingPublicKey",
+            newNextForgingKeyIndex: "newNextForgingKeyIndex",
+            newMultisigPublicKey: "newMultisigPublicKey",
+            newNextMultisigPublicKey: "newNextMultisigPublicKey",
+            newNextMultisigKeyIndex: "newNextMultisigKeyIndex",
+            newSigPublicKey: "newSigPublicKey",
+            newNextSigPublicKey: "newNextSigPublicKey",
+            newNextSigKeyIndex: "newNextSigKeyIndex",
+            memberAddresses: "memberAddresses",
+            requiredSignatureCount: "requiredSignatureCount"
+
         }
     },
     blocksTable : {

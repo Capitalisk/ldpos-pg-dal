@@ -11,6 +11,10 @@ types.setTypeParser(20, function(val) {
 
 const knex = require('knex')(config);
 if (isLocal(environment)) {
-    knex.on('query', (...args) => console.info(args));
+    knex.on('query', (...args) => {
+        if (process.env.KNEX_DEBUG) {
+            console.info(args);
+        }
+    });
 }
 module.exports = knex;

@@ -12,8 +12,10 @@
     "seed": "knex seed:run",
     "start:db": "docker-compose up db",
     "stop:db": "docker-compose stop db && docker-compose rm -f db",
+    "reset:db": "yarn stop:db && yarn start:db",
     "start:pgadmin": "docker-compose up pgadmin",
-    "stop:pgadmin": "docker-compose stop pgadmin && docker-compose rm -f pgadmin"
+    "stop:pgadmin": "docker-compose stop pgadmin && docker-compose rm -f pgadmin",
+    "reset:pgadmin": "yarn stop:pgadmin && yarn start:pgadmin"
   },
   "repository": {
     "type": "git",

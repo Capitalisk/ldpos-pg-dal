@@ -5,6 +5,8 @@ const firstOrDefault = (array, defaultValue) => (array.length > 0 ? firstValue(a
 
 const firstOrNull = (arr) => firstOrDefault(arr, null);
 
+const arrOrDefault = (arr, defaultValue) => isEmptyArray(arr) ? defaultValue : arr;
+
 const arrOrFirstOrNull = (arr) => arr.length > 1 ? arr : firstOrNull(arr);
 
 const firstValue = (array) => array[0];
@@ -52,4 +54,4 @@ const sort = (arr, key) => arr.sort((o1, o2) => {
     return o1[key].localeCompare(o2[key]);
 });
 
-module.exports = { isNullOrUndefinedOrEmpty, firstOrDefault, isLocal, isNullOrUndefined, run, excludeNullPropertiesFromArr, sort, excludePropertyFromArr, arrOrFirstOrNull, isEmpty, firstOrNull}
+module.exports = { isNullOrUndefinedOrEmpty, firstOrDefault, isLocal, isNullOrUndefined, run, excludeNullPropertiesFromArr, sort, excludePropertyFromArr, arrOrFirstOrNull, isEmpty, firstOrNull,arrOrDefault}

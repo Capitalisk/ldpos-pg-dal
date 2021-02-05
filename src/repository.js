@@ -1,6 +1,7 @@
 const {findMatchingRecords, updateMatchingRecords, matchFound, noMatchFound, insert, findMatchingRecordsCount, buildEqualityMatcherQuery } = require("../knex/knex-helpers");
 const {accountsTable, transactionsTable, blocksTable, delegatesTable, multisig_membershipsTable, ballotsTable, storeTable} = require("../knex/ldpos-table-schema");
 const { upsert } = require("../knex/pg-helpers");
+const {arrOrDefault} = require("./utils")
 
 // todo - advanced matcher should be implemented based on requirement
 
@@ -23,7 +24,7 @@ const repository = (tableName, ...primaryKeys) => {
 
     return {
         insert: (data) => insert(tableName, data),
-        upsert: (data, byColumns = primaryKeys) => upsert(tableName, data, [byColumns].flat()),
+        upsert: (data, ...byColumns) => upsert(tableName, data, arrOrDefault(byColumns, primaryKeys)),
         ...basicRepositoryOps({}),
         ...primaryKeyOps,
         buildBaseQuery: (equalityMatcher = {}) => buildEqualityMatcherQuery(tableName, equalityMatcher),

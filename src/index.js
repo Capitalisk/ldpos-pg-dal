@@ -344,7 +344,6 @@ class DAL {
   // todo check if height based upsert can be replaced with id
   async upsertBlock(block, synched) {
      const { transactions, ...pureBlock } = block;
-     pureBlock[blocksTable.field.numberOfTransactions] = transactions? transactions.length : 0;
      await blocksRepo.upsert(pureBlock, blocksTable.field.height);
      for ( const [index, transaction] of transactions.entries()) {
        const updatedTransaction = {
@@ -443,6 +442,8 @@ class DAL {
   }
 
   async upsertDelegate(delegate) {
+    const voteWeight = delegatesTable.field.voteWeight;
+    delegate = { ...delegate, [voteWeight]: parseInt(delegate[voteWeight], 10)}
     await delegatesRepo.upsert(delegate);
   }
 
@@ -458,21 +459,22 @@ class DAL {
       error.type = 'InvalidActionError';
       throw error;
     }
-    return {...delegate};
+    const voteWeight = delegatesTable.field.voteWeight;
+    return {...delegate, [voteWeight] : delegate[voteWeight].toString()};
   }
 
   async getDelegatesByVoteWeight(offset, limit, order) {
-     return delegatesRepo.buildBaseQuery()
+     const delegates = await delegatesRepo.buildBaseQuery()
          .whereNot(delegatesTable.field.voteWeight, "0")
          .orderBy(delegatesTable.field.voteWeight, order)
          .offset(offset)
          .limit(limit)
+    const voteWeight = delegatesTable.field.voteWeight;
+    return delegates.map(delegate => ({...delegate, [voteWeight] : delegate[voteWeight].toString()}))
   }
 
   async simplifyBlock(signedBlock) {
     let { forgerSignature, signatures, ...simpleBlock } = signedBlock;
-    const blockIdMatcher = { [transactionsTable.field.blockId] : signedBlock.id };
-    simpleBlock.numberOfTransactions = await transactionsRepo.count(blockIdMatcher);
     return simpleBlock;
   }
 }

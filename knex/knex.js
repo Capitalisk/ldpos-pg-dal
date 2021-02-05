@@ -3,6 +3,8 @@ const environment = process.env.ENVIRONMENT || 'development'
 const config = require('../knexfile.js')[environment];
 
 var types = require('pg').types;
+
+// todo - need to check if parseInt satisfy bigint requirement
 types.setTypeParser(20, function(val) {
     return parseInt(val, 10);
 });

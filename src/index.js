@@ -128,18 +128,20 @@ class DAL {
     return ballots.map(ballot => ballot[ballotsTable.field.delegateAddress])
   }
 
+  async hasVoteForDelegate(voterAddress, delegateAddress) {
+    const existingVotesMatcher = {
+      [ballotsTable.field.active]: true,
+      [ballotsTable.field.type]: "vote",
+      [ballotsTable.field.voterAddress]: voterAddress,
+      [ballotsTable.field.delegateAddress]: delegateAddress,
+    }
+    return await ballotsRepo.exists(existingVotesMatcher);
+  }
+
   async vote(ballot) {
     const { id, voterAddress, delegateAddress } = ballot;
     if (await ballotsRepo.id(id).notExist()) {
-
-      const existingVotesMatcher = {
-        [ballotsTable.field.active]: true,
-        [ballotsTable.field.type]: "vote",
-        [ballotsTable.field.voterAddress]: voterAddress,
-        [ballotsTable.field.delegateAddress]: delegateAddress,
-      }
-      const hasExistingVote = await ballotsRepo.exists(existingVotesMatcher);
-
+      const hasExistingVote = await this.hasVoteForDelegate(voterAddress, delegateAddress);
       if (hasExistingVote) {
         let error = new Error(
             `Voter ${voterAddress} has already voted for delegate ${delegateAddress}`

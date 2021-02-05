@@ -9,7 +9,6 @@ exports.up = function(knex) {
             tbl.string(table.field.delegateAddress, 50).notNullable()
             tbl.boolean(table.field.active).defaultTo(true).notNullable();
             tbl.primary([table.field.id]);
-            tbl.unique([table.field.voterAddress, table.field.delegateAddress]);
         }),
     )
 };

@@ -1,5 +1,5 @@
 {
-  "name": "ldpos-postgres-dal",
+  "name": "ldpos-knex-dal",
   "version": "1.0.0",
   "description": "Postgres Data Access Layer for LDPoS",
   "main": "src/index.js",
@@ -19,19 +19,20 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Leasehold/ldpos-postgres-dal.git"
+    "url": "git+https://github.com/Leasehold/ldpos-knex-dal.git"
   },
   "keywords": [
     "ldpos",
-    "postgres",
+    "posgres",
+    "knex",
     "dal"
   ],
   "author": "Jonathan Gros-Dubois",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Leasehold/ldpos-postgres-dal/issues"
+    "url": "https://github.com/Leasehold/ldpos-knex-dal/issues"
   },
-  "homepage": "https://github.com/Leasehold/ldpos-postgres-dal#readme",
+  "homepage": "https://github.com/Leasehold/ldpos-knex-dal#readme",
   "devDependencies": {
     "chai": "^4.2.0",
     "mocha": "^8.2.1"

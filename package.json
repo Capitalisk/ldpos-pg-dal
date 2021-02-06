@@ -1,7 +1,7 @@
 {
   "name": "ldpos-knex-dal",
-  "version": "1.0.0",
-  "description": "Postgres Data Access Layer for LDPoS",
+  "version": "1.0.1",
+  "description": "Knex Postgres Data Access Layer for LDPoS",
   "main": "src/index.js",
   "scripts": {
     "test:integration": "mocha test/integration --reporter spec --timeout 10000 --slow 10000 -r chai/register-expect",
@@ -27,7 +27,7 @@
     "knex",
     "dal"
   ],
-  "author": "Jonathan Gros-Dubois",
+  "author": "Sachin Shinde",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/Leasehold/ldpos-knex-dal/issues"

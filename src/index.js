@@ -70,7 +70,7 @@ class DAL {
   async saveItem(key, value) {
     const item = {
       [storeTable.field.key]: key,
-      [storeTable.field.value] : value,
+      [storeTable.field.value]: value,
     };
     await storeRepo.upsert(item);
   }
@@ -232,7 +232,7 @@ class DAL {
         [multisig_membershipsTable.field.multsigAccountAddress]: multisigAddress,
         [multisig_membershipsTable.field.memberAddress]: memberAddress,
       };
-      await multisigMembershipsRepo.insert(multiSigMembership);
+      await multisigMembershipsRepo.upsert(multiSigMembership);
     }
   }
 

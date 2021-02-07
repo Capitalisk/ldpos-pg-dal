@@ -6,11 +6,11 @@ Knex Data Access Layer for LDPoS.
 - Make sure docker command is available on the path.
 
 ## Starting postgres
-- Run ```docker-compose up db```
-- Type ```ctrl+c```, ```docker-compose stop db```, ```docker-compose rm db```to stop & remove old db instance.
+- Run ```yarn start:db``` to start postgres instance inside docker
+- Type ```ctrl+c```, ```yarn stop:db```to stop & remove old db instance.
 
 ## Starting pgadmin
-- Run ```docker-compose up pgadmin```
+- Run ```yarn start:pgadmin```
 - Visit ```localhost:8081``` for pgadmin interface.
 - Login using creds specified in ```docker-compose.yml``` file under pgadmin service.
 - Click ```Add New Server``` -> General Tab -> Name = Test-Server

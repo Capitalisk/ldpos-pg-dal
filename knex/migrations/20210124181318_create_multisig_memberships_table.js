@@ -4,8 +4,8 @@ const tableName = table.name;
 exports.up = function(knex) {
     return Promise.resolve(
         knex.schema.createTable(tableName, (tbl) => {
-            tbl.string(table.field.multsigAccountAddress, 50).notNullable();
-            tbl.string(table.field.memberAddress, 50).notNullable();
+            tbl.string(table.field.multsigAccountAddress, 50).notNullable().index();
+            tbl.string(table.field.memberAddress, 50).notNullable().index();
             tbl.primary([table.field.multsigAccountAddress,table.field.memberAddress]);
         }),
     )

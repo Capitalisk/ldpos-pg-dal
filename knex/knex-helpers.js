@@ -21,7 +21,7 @@ const findMatchingRecordsCount  = (tableName, matcher) =>
   Promise.resolve(
     buildEqualityMatcherQuery(tableName, matcher)
       .count()
-      .then((rows) => firstOrDefault(rows, { count: 0 }).count)
+      .then((rows) => firstOrDefault(rows, { count: '0' })).then(({ count }) => parseInt(count, 10))
   );
 
 const noMatchFound = (tableName, matcher) => findMatchingRecordsCount(tableName, matcher).then((cnt) => cnt === 0);

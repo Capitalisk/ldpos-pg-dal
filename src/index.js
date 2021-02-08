@@ -443,8 +443,6 @@ class DAL {
   }
 
   async upsertDelegate(delegate) {
-    const voteWeight = delegatesTable.field.voteWeight;
-    delegate = {...delegate, [voteWeight]: parseInt(delegate[voteWeight], 10)};
     await delegatesRepo.upsert(delegate);
   }
 
@@ -460,18 +458,15 @@ class DAL {
       error.type = 'InvalidActionError';
       throw error;
     }
-    const voteWeight = delegatesTable.field.voteWeight;
-    return {...delegate, [voteWeight] : delegate[voteWeight].toString()};
+    return {...delegate};
   }
 
   async getDelegatesByVoteWeight(offset, limit, order) {
-    const delegates = await delegatesRepo.buildBaseQuery()
-      .whereNot(delegatesTable.field.voteWeight, '0')
-      .orderBy(delegatesTable.field.voteWeight, order)
-      .offset(offset)
-      .limit(limit);
-    const voteWeight = delegatesTable.field.voteWeight;
-    return delegates.map(delegate => ({...delegate, [voteWeight] : delegate[voteWeight].toString()}));
+    return delegatesRepo.buildBaseQuery()
+        .whereNot(delegatesTable.field.voteWeight, 0)
+        .orderBy(delegatesTable.field.voteWeight, order)
+        .offset(offset)
+        .limit(limit);
   }
 
   async simplifyBlock(signedBlock) {

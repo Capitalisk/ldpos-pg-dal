@@ -26,7 +26,7 @@ describe('Integration tests', async () => {
 
     it('should initialise genesis delegates', async () => {
         const mockDelegates = sort(Object.values(mockRepository.delegates), delegatesTable.field.address);
-        const delegates = excludeNullPropertiesFromArr(await delegatesRepo.get()).map(d => ({...d, voteWeight: d["voteWeight"].toString()}))
+        const delegates = excludeNullPropertiesFromArr(await delegatesRepo.get())
         const actualDelegates = sort(delegates, delegatesTable.field.address);
         expect(actualDelegates).to.deep.equal(mockDelegates);
     });

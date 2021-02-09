@@ -13,8 +13,13 @@ const buildEqualityMatcherQuery = (tableName, matcher, parser) => {
   query.then = (fn) => {
     query.then = thenable;
     return Promise.resolve(query).then(dataSet => {
-      const parsedData = parser(dataSet);
-      return fn(parsedData);
+      try {
+        const parsedData = parser(dataSet);
+        return fn(parsedData);
+      } catch (e) {
+        console.error(e);
+        return Promise.reject(e);
+      }
     });
   }
   return query;

@@ -1,5 +1,5 @@
-const {accountsTable, transactionsTable, blocksTable, delegatesTable} = require("../knex/ldpos-table-schema")
-const {isNullOrUndefined} = require("./utils")
+const {accountsTable, transactionsTable, blocksTable, delegatesTable} = require('../knex/ldpos-table-schema');
+const {isNullOrUndefined} = require('./utils');
 
 // responsible for parsing string into bigInteger values
 const parse = (objects, keys) => {
@@ -12,15 +12,16 @@ const parse = (objects, keys) => {
         return obj;
     };
     return objects.map(mapper);
-}
+};
+
 // can be converted into two types of parsers -> From & To parser
 const accountsTableParser = (accounts) => {
     const bigIntegerFields = [
         accountsTable.field.lastTransactionTimestamp,
-        accountsTable.field.updateHeight
-    ]
-    return parse(accounts, bigIntegerFields)
-}
+        accountsTable.field.updateHeight,
+    ];
+    return parse(accounts, bigIntegerFields);
+};
 
 const transactionTableParser = (transactions) => {
     const bigIntegerFields = [
@@ -28,30 +29,30 @@ const transactionTableParser = (transactions) => {
         transactionsTable.field.nextSigKeyIndex,
         transactionsTable.field.newNextForgingKeyIndex,
         transactionsTable.field.newNextMultisigKeyIndex,
-        transactionsTable.field.newNextSigKeyIndex
-    ]
+        transactionsTable.field.newNextSigKeyIndex,
+    ];
     return parse(transactions, bigIntegerFields);
-}
+};
 
 const blocksTableParser = (blocks) => {
     const bigIntegerFields = [
         blocksTable.field.height,
         blocksTable.field.timestamp,
-        blocksTable.field.nextForgingKeyIndex
-    ]
-    return parse(blocks, bigIntegerFields)
-}
+        blocksTable.field.nextForgingKeyIndex,
+    ];
+    return parse(blocks, bigIntegerFields);
+};
 
 const delegatesTableParser = (delegates) => {
-    const bigIntegerFields = [delegatesTable.field.updateHeight]
-    return parse(delegates, bigIntegerFields)
-}
+    const bigIntegerFields = [delegatesTable.field.updateHeight];
+    return parse(delegates, bigIntegerFields);
+};
 
 const Parsers = {
     [accountsTable.name] : accountsTableParser,
     [transactionsTable.name] : transactionTableParser,
     [blocksTable.name] : blocksTableParser,
     [delegatesTable.name] : delegatesTableParser,
-}
+};
 
 module.exports = Parsers;

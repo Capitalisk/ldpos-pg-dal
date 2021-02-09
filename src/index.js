@@ -1,12 +1,13 @@
 const knex = require('../knex/knex')
 const crypto = require('crypto');
-const {firstOrNull, isEmpty} = require('./utils')
+const {firstOrNull, isEmpty} = require('./utils');
 const {ballotsTable, multisig_membershipsTable, blocksTable, accountsTable, delegatesTable, transactionsTable, storeTable} = require('../knex/ldpos-table-schema');
 const {areTablesEmpty}  = require('../knex/pg-helpers');
-const {accountsRepo, ballotsRepo, multisigMembershipsRepo, transactionsRepo, delegatesRepo, blocksRepo, storeRepo} = require('./repository')
+const {accountsRepo, ballotsRepo, multisigMembershipsRepo, transactionsRepo, delegatesRepo, blocksRepo, storeRepo} = require('./repository');
 const DEFAULT_NETWORK_SYMBOL = 'ldpos';
 const ID_BYTE_SIZE = 20;
-// todo - constructor and init can be refined
+
+// TODO: Constructor and init can be refined.
 class DAL {
 
   constructor() {}

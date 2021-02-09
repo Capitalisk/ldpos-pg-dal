@@ -1,8 +1,8 @@
 const {findMatchingRecords, updateMatchingRecords, matchFound, noMatchFound, insert, findMatchingRecordsCount, buildEqualityMatcherQuery} = require('../knex/knex-helpers');
 const {accountsTable, transactionsTable, blocksTable, delegatesTable, multisig_membershipsTable, ballotsTable, storeTable} = require('../knex/ldpos-table-schema');
 const {upsert} = require('../knex/pg-helpers');
-const {arrOrDefault} = require('./utils')
-const parsers = require("./parser")
+const {arrOrDefault} = require('./utils');
+const parsers = require('./parser');
 
 // todo - advanced matcher should be implemented based on requirement
 

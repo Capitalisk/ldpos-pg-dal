@@ -1,14 +1,26 @@
-const {firstOrDefault} = require('../src/utils');
+const {firstOrDefault, isNullOrUndefined} = require('../src/utils');
 const knex = require('./knex');
 
 const insert = (tableName, data) => Promise.resolve(knex(tableName).insert(data));
 
-const buildEqualityMatcherQuery = (tableName, matcher) => {
+const buildEqualityMatcherQuery = (tableName, matcher, parser) => {
   const baseQuery = knex(tableName).select();
-  return Object.entries(matcher).reduce((query, [key, value]) => query.where(key, value), baseQuery);
-};
+  const query =  Object.entries(matcher).reduce((query, [key, value]) => query.where(key, value), baseQuery);
+  if (isNullOrUndefined(parser)) {
+    return query;
+  }
+  const thenable = query.__proto__.then;
+  query.then = (fn) => {
+    query.then = thenable;
+    return Promise.resolve(query).then(dataSet => {
+      const parsedData = parser(dataSet);
+      return fn(parsedData);
+    });
+  }
+  return query;
+}
 
-const findMatchingRecords = (tableName, matcher) => Promise.resolve(buildEqualityMatcherQuery(tableName, matcher));
+const findMatchingRecords = (tableName, matcher, parser) => Promise.resolve(buildEqualityMatcherQuery(tableName, matcher, parser));
 
 const deleteMatchingRecords = (tableName, matcher) => Promise.resolve(buildEqualityMatcherQuery(tableName, matcher).delete());
 

@@ -2,13 +2,15 @@ const {findMatchingRecords, updateMatchingRecords, matchFound, noMatchFound, ins
 const {accountsTable, transactionsTable, blocksTable, delegatesTable, multisig_membershipsTable, ballotsTable, storeTable} = require('../knex/ldpos-table-schema');
 const {upsert} = require('../knex/pg-helpers');
 const {arrOrDefault} = require('./utils')
+const parsers = require("./parser")
 
 // todo - advanced matcher should be implemented based on requirement
 
 const repository = (tableName, ...primaryKeys) => {
+  const dataReadParser = parsers[tableName];
   const basicRepositoryOps = (defaultMatcher) =>
     ({
-      get: (equalityMatcher = defaultMatcher) => findMatchingRecords(tableName, equalityMatcher),
+      get: (equalityMatcher = defaultMatcher) => findMatchingRecords(tableName, equalityMatcher, dataReadParser),
       update: (updatedData, equalityMatcher = defaultMatcher) => updateMatchingRecords(tableName, equalityMatcher, updatedData),
       exists: (equalityMatcher = defaultMatcher) => matchFound(tableName, equalityMatcher),
       notExist: (equalityMatcher = defaultMatcher) => noMatchFound(tableName, equalityMatcher),
@@ -26,7 +28,7 @@ const repository = (tableName, ...primaryKeys) => {
     upsert: (data, ...byColumns) => upsert(tableName, data, arrOrDefault(byColumns, primaryKeys)),
     ...basicRepositoryOps({}),
     ...primaryKeyOps,
-    buildBaseQuery: (equalityMatcher = {}) => buildEqualityMatcherQuery(tableName, equalityMatcher),
+    buildBaseQuery: (equalityMatcher = {}) => buildEqualityMatcherQuery(tableName, equalityMatcher, dataReadParser),
   };
 };
 

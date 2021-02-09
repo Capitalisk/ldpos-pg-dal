@@ -4,9 +4,9 @@ const {isNullOrUndefined} = require("./utils")
 // responsible for parsing string into bigInteger values
 const parse = (objects, keys) => {
     const mapper = (obj) => {
-        for ( const [key, value] of Object.entries(obj)) {
-            if (!isNullOrUndefined(value) && keys.includes(key)) {
-                obj[key] = parseInt(value, 10);
+        for (key of keys) {
+            if (key in obj && !isNullOrUndefined(obj[key])) {
+                obj[key] = parseInt(obj[key], 10);
             }
         }
         return obj;

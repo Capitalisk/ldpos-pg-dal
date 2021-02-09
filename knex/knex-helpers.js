@@ -9,10 +9,10 @@ const buildEqualityMatcherQuery = (tableName, matcher, parser) => {
   if (isNullOrUndefined(parser)) {
     return query;
   }
-  const thenable = query.__proto__.then;
+  // Monkey-patching the query then functionality to support custom parsing.
+  const thenable = query.then;
   query.then = (fn) => {
-    query.then = thenable;
-    return Promise.resolve(query).then(dataSet => {
+    return thenable.call(query, dataSet => {
       try {
         const parsedData = parser(dataSet);
         return fn(parsedData);
@@ -21,7 +21,7 @@ const buildEqualityMatcherQuery = (tableName, matcher, parser) => {
         return Promise.reject(e);
       }
     });
-  }
+  };
   return query;
 }
 

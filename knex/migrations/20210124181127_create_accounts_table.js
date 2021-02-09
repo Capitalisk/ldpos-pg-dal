@@ -14,8 +14,8 @@ exports.up = function(knex) {
             tbl.string(table.field.sigPublicKey, 64).nullable();
             tbl.integer(table.field.nextSigKeyIndex).nullable();
             tbl.integer(table.field.requiredSignatureCount).nullable();
-            tbl.integer(table.field.updateHeight).nullable();
-            tbl.integer(table.field.lastTransactionTimestamp).nullable();
+            tbl.bigInteger(table.field.updateHeight).nullable();
+            tbl.bigInteger(table.field.lastTransactionTimestamp).nullable();
             tbl.string(table.field.nextForgingPublicKey, 64).nullable();
             tbl.string(table.field.nextMultisigPublicKey, 64).nullable();
             tbl.string(table.field.nextSigPublicKey, 64).nullable();

@@ -285,28 +285,46 @@ class DAL {
     return [...memberAddresses];
   }
 
-  // Need to check based on what get last block
-  async getLastBlock() {
-     const matchingBlocks = await this.blocksRepo.buildBaseQuery()
-       .orderBy(blocksTable.field.height, 'desc')
-       .limit(1);
-     return firstOrNull(matchingBlocks);
-  }
-
   async getBlocksFromHeight(height, limit) {
-    // todo : is it possible that this scenario might come
     if (height < 1) {
       height = 1;
     }
     let offset = height - 1;
-    return this.blocksRepo.buildBaseQuery()
+    let blocks = await this.blocksRepo.buildBaseQuery()
       .offset(offset)
       .limit(limit);
+    return blocks.map(block => this.simplifyBlock(block));
   }
 
   async getSignedBlocksFromHeight(height, limit) {
-    const blocks = await this.getBlocksFromHeight(height, limit);
-    return Promise.all(blocks.map(this.simplifyBlock));
+    if (height < 1) {
+      height = 1;
+    }
+    let offset = height - 1;
+    let blocks = await this.blocksRepo.buildBaseQuery()
+      .offset(offset)
+      .limit(limit);
+    await Promise.all(
+      blocks.map(async (block) => {
+        block.transactions = await this.getSanitizedTransactionsFromBlock(block.id);
+      })
+    );
+    return blocks;
+  }
+
+  async getSanitizedTransactionsFromBlock(blockId) {
+    let txns = await this.getTransactionsFromBlock(blockId);
+    for (let txn of txns) {
+      delete txn.indexInBlock;
+      delete txn.blockId;
+      let props = Object.keys(txn);
+      for (let prop of props) {
+        if (txn[prop] == null) {
+          delete txn[prop];
+        }
+      }
+    }
+    return txns;
   }
 
   async getLastBlockAtTimestamp(timestamp) {
@@ -321,14 +339,15 @@ class DAL {
       error.type = 'InvalidActionError';
       throw error;
     }
-    return {...block};
+    return this.simplifyBlock(block);
   }
 
   async getBlocksBetweenHeights(fromHeight, toHeight, limit) {
-    return this.blocksRepo.buildBaseQuery()
+    let blocks = await this.blocksRepo.buildBaseQuery()
       .where(blocksTable.field.height, '>', fromHeight)
       .andWhere(blocksTable.field.height, '<=', toHeight)
       .limit(limit);
+    return blocks.map(block => this.simplifyBlock(block));
   }
 
   async getBlockAtHeight(height) {
@@ -342,13 +361,23 @@ class DAL {
       error.type = 'InvalidActionError';
       throw error;
     }
-    return {...block};
+    return this.simplifyBlock(block);
   }
 
   // todo : Need to check this again, if this is index based or field based
   async getSignedBlockAtHeight(height) {
-    const block = await this.getBlockAtHeight(height);
-    return await this.simplifyBlock(block);
+    const heightMatcher = {[blocksTable.field.height]: height};
+    const block = firstOrNull(await this.blocksRepo.get(heightMatcher));
+    if (!block) {
+      let error = new Error(
+        `No block existed at height ${height}`
+      );
+      error.name = 'BlockDidNotExistError';
+      error.type = 'InvalidActionError';
+      throw error;
+    }
+    block.transactions = await this.getSanitizedTransactionsFromBlock(block.id);
+    return block;
   }
 
   async hasBlock(id) {
@@ -365,14 +394,15 @@ class DAL {
       error.type = 'InvalidActionError';
       throw error;
     }
-    return {...block};
+    return this.simplifyBlock(block);
   }
 
   async getBlocksByTimestamp(offset, limit, order) {
-    return this.blocksRepo.buildBaseQuery()
+    let blocks = await this.blocksRepo.buildBaseQuery()
       .orderBy(blocksTable.field.timestamp, order)
       .offset(offset)
       .limit(limit);
+    return blocks.map(block => this.simplifyBlock(block));
   }
 
   // todo for update operations, return number of records updated
@@ -427,6 +457,7 @@ class DAL {
       offset = 0;
     }
     const baseQuery = this.transactionsRepo.buildBaseQuery()
+      .orderBy(transactionsTable.field.indexInBlock, 'asc')
       .where(transactionsTable.field.blockId, blockId)
       .andWhere(transactionsTable.field.indexInBlock, '>=', offset);
 
@@ -509,7 +540,7 @@ class DAL {
         .limit(limit);
   }
 
-  async simplifyBlock(signedBlock) {
+  simplifyBlock(signedBlock) {
     let {forgerSignature, signatures, ...simpleBlock} = signedBlock;
     return simpleBlock;
   }

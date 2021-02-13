@@ -2,11 +2,25 @@ const {accountsTable, transactionsTable, blocksTable, delegatesTable} = require(
 const {isNullOrUndefined} = require('./utils');
 
 // responsible for parsing string into bigInteger values
-const parse = (objects, keys) => {
+const parseAsNumber = (objects, keys) => {
     const mapper = (obj) => {
         for (key of keys) {
             if (key in obj && !isNullOrUndefined(obj[key])) {
                 obj[key] = parseInt(obj[key], 10);
+            }
+        }
+        return obj;
+    };
+    return objects.map(mapper);
+};
+
+const parseBase64AsObject = (objects, keys) => {
+    const mapper = (obj) => {
+        for (key of keys) {
+            if (key in obj && !isNullOrUndefined(obj[key])) {
+                obj[key] = JSON.parse(
+                  Buffer.from(obj[key], 'base64').toString('utf8')
+                );
             }
         }
         return obj;
@@ -20,7 +34,7 @@ const accountsTableParser = (accounts) => {
         accountsTable.field.lastTransactionTimestamp,
         accountsTable.field.updateHeight,
     ];
-    return parse(accounts, bigIntegerFields);
+    return parseAsNumber(accounts, bigIntegerFields);
 };
 
 const transactionTableParser = (transactions) => {
@@ -31,7 +45,11 @@ const transactionTableParser = (transactions) => {
         transactionsTable.field.newNextMultisigKeyIndex,
         transactionsTable.field.newNextSigKeyIndex,
     ];
-    return parse(transactions, bigIntegerFields);
+    parseAsNumber(transactions, bigIntegerFields);
+    const base64Fields = [
+        transactionsTable.field.signatures,
+    ];
+    return parseBase64AsObject(transactions, base64Fields);
 };
 
 const blocksTableParser = (blocks) => {
@@ -40,12 +58,16 @@ const blocksTableParser = (blocks) => {
         blocksTable.field.timestamp,
         blocksTable.field.nextForgingKeyIndex,
     ];
-    return parse(blocks, bigIntegerFields);
+    parseAsNumber(blocks, bigIntegerFields);
+    const base64Fields = [
+        transactionsTable.field.signatures,
+    ];
+    return parseBase64AsObject(blocks, base64Fields);
 };
 
 const delegatesTableParser = (delegates) => {
     const bigIntegerFields = [delegatesTable.field.updateHeight];
-    return parse(delegates, bigIntegerFields);
+    return parseAsNumber(delegates, bigIntegerFields);
 };
 
 const Parsers = {

@@ -125,7 +125,6 @@ class DAL {
     await this.accountsRepo.upsert(account);
   }
 
-
   async hasAccount(walletAddress) {
     return await this.accountsRepo.address(walletAddress).exists();
   }
@@ -381,9 +380,13 @@ class DAL {
   // todo what is synched field being used for
   // todo check if height based upsert can be replaced with id
   async upsertBlock(block, synched) {
-    const { transactions, ...pureBlock } = block;
+    const { transactions, signatures, ...pureBlock } = block;
+    pureBlock.signatures = Buffer.from(JSON.stringify(signatures), 'utf8').toString('base64');
     await this.blocksRepo.upsert(pureBlock, blocksTable.field.height);
     for ( const [index, transaction] of transactions.entries()) {
+      if (transaction.signatures) {
+        transaction.signatures = Buffer.from(JSON.stringify(transaction.signatures), 'utf8').toString('base64');
+      }
       const updatedTransaction = {
         ...transaction,
         [transactionsTable.field.blockId]: block.id,

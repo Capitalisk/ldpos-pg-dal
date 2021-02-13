@@ -1,6 +1,6 @@
 {
   "name": "ldpos-knex-dal",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Knex Postgres Data Access Layer for LDPoS",
   "main": "src/index.js",
   "scripts": {

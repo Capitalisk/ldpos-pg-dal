@@ -1,26 +1,62 @@
-const knex = require('../knex/knex')
 const crypto = require('crypto');
-const {firstOrNull, isEmpty} = require('./utils');
+const {firstOrNull, isEmpty, arrOrDefault} = require('./utils');
+const KnexClient = require('../knex/knex-client');
 const {ballotsTable, multisig_membershipsTable, blocksTable, accountsTable, delegatesTable, transactionsTable, storeTable} = require('../knex/ldpos-table-schema');
-const {areTablesEmpty}  = require('../knex/pg-helpers');
-const {accountsRepo, ballotsRepo, multisigMembershipsRepo, transactionsRepo, delegatesRepo, blocksRepo, storeRepo} = require('./repository');
+const parsers = require('./parser');
+
 const DEFAULT_NETWORK_SYMBOL = 'ldpos';
 const ID_BYTE_SIZE = 20;
 
-// TODO: Constructor and init can be refined.
 class DAL {
-
-  constructor() {}
+  constructor(config) {
+    config = config || {};
+    this.logger = config.logger || console;
+  }
 
   async init(options) {
-    await knex.migrate.latest();
+    this.knexClient = new KnexClient(options);
+
+    this.ballotsRepo = this.repository(ballotsTable.name, ballotsTable.field.id);
+    this.accountsRepo = this.repository(accountsTable.name, accountsTable.field.address);
+    this.transactionsRepo = this.repository(transactionsTable.name, transactionsTable.field.id);
+    this.blocksRepo = this.repository(blocksTable.name, blocksTable.field.id);
+    this.delegatesRepo = this.repository(delegatesTable.name, delegatesTable.field.address);
+    this.multisigMembershipsRepo = ((tableName, ...primaryKeys) => {
+      const msmRepo = this.repository(tableName, ...primaryKeys);
+      return {
+        ...msmRepo,
+        multsigAccountAddress : (address) => ({
+          ...msmRepo.multsigAccountAddress(address),
+          get : () => msmRepo.multsigAccountAddress(address).get().then(r => r. map(a => a[primaryKeys[1]]))
+        })
+      };
+    })(multisig_membershipsTable.name, multisig_membershipsTable.field.multsigAccountAddress, multisig_membershipsTable.field.memberAddress);
+    this.storeRepo = this.repository(storeTable.name, storeTable.field.key);
+
+    if (options.clearAllDataOnInit) {
+      try {
+        await Promise.all([
+          this.ballotsRepo.truncate(),
+          this.accountsRepo.truncate(),
+          this.transactionsRepo.truncate(),
+          this.blocksRepo.truncate(),
+          this.delegatesRepo.truncate(),
+          this.multisigMembershipsRepo.truncate(),
+          this.storeRepo.truncate(),
+        ]);
+      } catch (error) {
+        this.logger.debug(error);
+      }
+    }
+
+    await this.knexClient.migrateLatest();
 
     let {genesis} = options;
     let {accounts} = genesis;
     let multisigWalletList = genesis.multisigWallets || [];
     this.networkSymbol = genesis.networkSymbol || DEFAULT_NETWORK_SYMBOL;
 
-    if (await areTablesEmpty()) {
+    if (await this.knexClient.areTablesEmpty()) {
       await Promise.all(
         accounts.map(async (accountInfo) => {
           let {votes, ...accountWithoutVotes} = accountInfo;
@@ -73,11 +109,11 @@ class DAL {
       [storeTable.field.key]: key,
       [storeTable.field.value]: value,
     };
-    await storeRepo.upsert(item);
+    await this.storeRepo.upsert(item);
   }
 
   async loadItem(key) {
-    const keyValuePair = firstOrNull(await storeRepo.key(key).get());
+    const keyValuePair = firstOrNull(await this.storeRepo.key(key).get());
     return keyValuePair ? keyValuePair[storeTable.field.value] : null;
   }
 
@@ -86,16 +122,16 @@ class DAL {
   }
 
   async upsertAccount(account) {
-    await accountsRepo.upsert(account);
+    await this.accountsRepo.upsert(account);
   }
 
 
   async hasAccount(walletAddress) {
-    return await accountsRepo.address(walletAddress).exists();
+    return await this.accountsRepo.address(walletAddress).exists();
   }
 
   async getAccount(walletAddress) {
-    const account = firstOrNull(await accountsRepo.address(walletAddress).get());
+    const account = firstOrNull(await this.accountsRepo.address(walletAddress).get());
     if (!account) {
       let error = new Error(`Account ${walletAddress} did not exist`);
       error.name = 'AccountDidNotExistError';
@@ -106,14 +142,14 @@ class DAL {
   }
 
   async getAccountsByBalance(offset, limit, order) {
-    return accountsRepo.buildBaseQuery()
+    return this.accountsRepo.buildBaseQuery()
       .orderBy(accountsTable.field.balance, order)
       .offset(offset)
       .limit(limit);
   }
 
   async getAccountVotes(voterAddress) {
-    if (await accountsRepo.address(voterAddress).notExist()) {
+    if (await this.accountsRepo.address(voterAddress).notExist()) {
       let error = new Error(`Voter ${voterAddress} did not exist`);
       error.name = 'VoterAccountDidNotExistError';
       error.type = 'InvalidActionError';
@@ -124,7 +160,7 @@ class DAL {
       [ballotsTable.field.type]: 'vote',
       [ballotsTable.field.voterAddress]: voterAddress,
     };
-    const ballots = await ballotsRepo.get(activeVotesMatcher);
+    const ballots = await this.ballotsRepo.get(activeVotesMatcher);
     return ballots.map(ballot => ballot[ballotsTable.field.delegateAddress]);
   }
 
@@ -135,12 +171,12 @@ class DAL {
       [ballotsTable.field.voterAddress]: voterAddress,
       [ballotsTable.field.delegateAddress]: delegateAddress,
     };
-    return await ballotsRepo.exists(existingVotesMatcher);
+    return await this.ballotsRepo.exists(existingVotesMatcher);
   }
 
   async vote(ballot) {
     const { id, voterAddress, delegateAddress } = ballot;
-    if (await ballotsRepo.id(id).notExist()) {
+    if (await this.ballotsRepo.id(id).notExist()) {
       const hasExistingVote = await this.hasVoteForDelegate(voterAddress, delegateAddress);
       if (hasExistingVote) {
         let error = new Error(
@@ -157,16 +193,16 @@ class DAL {
         [ballotsTable.field.delegateAddress]: delegateAddress,
       }
       const markInactive = {[ballotsTable.field.active]: false};
-      await ballotsRepo.update(markInactive, existingUnvotesMatcher);
+      await this.ballotsRepo.update(markInactive, existingUnvotesMatcher);
     }
     ballot = {...ballot, type: 'vote', active: true};
-    await ballotsRepo.upsert(ballot);
+    await this.ballotsRepo.upsert(ballot);
   }
 
   async unvote(ballot) {
     const { id, voterAddress, delegateAddress } = ballot;
 
-    if (await ballotsRepo.id(id).notExist()) {
+    if (await this.ballotsRepo.id(id).notExist()) {
       const existingVotesMatcher = {
         [ballotsTable.field.active]: true,
         [ballotsTable.field.type]: 'vote',
@@ -181,8 +217,8 @@ class DAL {
         [ballotsTable.field.delegateAddress]: delegateAddress,
       };
 
-      const hasNoExistingVotes = await ballotsRepo.notExist(existingVotesMatcher);
-      const hasExistingUnvotes = await ballotsRepo.exists(existingUnvotesMatcher);
+      const hasNoExistingVotes = await this.ballotsRepo.notExist(existingVotesMatcher);
+      const hasExistingUnvotes = await this.ballotsRepo.exists(existingUnvotesMatcher);
 
       if (hasNoExistingVotes || hasExistingUnvotes) {
         let error = new Error(
@@ -194,10 +230,10 @@ class DAL {
       }
 
       const markInactive = {[ballotsTable.field.active]: false};
-      await ballotsRepo.update(markInactive, existingVotesMatcher);
+      await this.ballotsRepo.update(markInactive, existingVotesMatcher);
     }
     ballot = {...ballot,  type: 'unvote', active: true};
-    await ballotsRepo.upsert(ballot);
+    await this.ballotsRepo.upsert(ballot);
   }
 
   async registerMultisigWallet(multisigAddress, memberAddresses, requiredSignatureCount) {
@@ -233,12 +269,12 @@ class DAL {
         [multisig_membershipsTable.field.multsigAccountAddress]: multisigAddress,
         [multisig_membershipsTable.field.memberAddress]: memberAddress,
       };
-      await multisigMembershipsRepo.upsert(multiSigMembership);
+      await this.multisigMembershipsRepo.upsert(multiSigMembership);
     }
   }
 
   async getMultisigWalletMembers(multisigAddress) {
-    let memberAddresses = await multisigMembershipsRepo.multsigAccountAddress(multisigAddress).get();
+    let memberAddresses = await this.multisigMembershipsRepo.multsigAccountAddress(multisigAddress).get();
     if (isEmpty(memberAddresses)) {
       let error = new Error(
         `Address ${multisigAddress} is not registered as a multisig wallet`
@@ -252,7 +288,7 @@ class DAL {
 
   // Need to check based on what get last block
   async getLastBlock() {
-     const matchingBlocks = await blocksRepo.buildBaseQuery()
+     const matchingBlocks = await this.blocksRepo.buildBaseQuery()
        .orderBy(blocksTable.field.height, 'desc')
        .limit(1);
      return firstOrNull(matchingBlocks);
@@ -264,7 +300,7 @@ class DAL {
       height = 1;
     }
     let offset = height - 1;
-    return blocksRepo.buildBaseQuery()
+    return this.blocksRepo.buildBaseQuery()
       .offset(offset)
       .limit(limit);
   }
@@ -275,7 +311,7 @@ class DAL {
   }
 
   async getLastBlockAtTimestamp(timestamp) {
-    const blocks = await blocksRepo.buildBaseQuery()
+    const blocks = await this.blocksRepo.buildBaseQuery()
       .where(blocksTable.field.timestamp, '<=', timestamp);
     const block = firstOrNull(blocks);
     if (!block) {
@@ -290,7 +326,7 @@ class DAL {
   }
 
   async getBlocksBetweenHeights(fromHeight, toHeight, limit) {
-    return blocksRepo.buildBaseQuery()
+    return this.blocksRepo.buildBaseQuery()
       .where(blocksTable.field.height, '>', fromHeight)
       .andWhere(blocksTable.field.height, '<=', toHeight)
       .limit(limit);
@@ -298,7 +334,7 @@ class DAL {
 
   async getBlockAtHeight(height) {
     const heightMatcher = {[blocksTable.field.height]: height};
-    const block = firstOrNull(await blocksRepo.get(heightMatcher));
+    const block = firstOrNull(await this.blocksRepo.get(heightMatcher));
     if (!block) {
       let error = new Error(
         `No block existed at height ${height}`
@@ -317,11 +353,11 @@ class DAL {
   }
 
   async hasBlock(id) {
-    return await blocksRepo.id(id).exists();
+    return await this.blocksRepo.id(id).exists();
   }
 
   async getBlock(id) {
-    const block = firstOrNull(blocksRepo.id(id).get());
+    const block = firstOrNull(this.blocksRepo.id(id).get());
     if (!block) {
       let error = new Error(
         `No block existed with ID ${id}`
@@ -334,7 +370,7 @@ class DAL {
   }
 
   async getBlocksByTimestamp(offset, limit, order) {
-    return blocksRepo.buildBaseQuery()
+    return this.blocksRepo.buildBaseQuery()
       .orderBy(blocksTable.field.timestamp, order)
       .offset(offset)
       .limit(limit);
@@ -346,27 +382,27 @@ class DAL {
   // todo check if height based upsert can be replaced with id
   async upsertBlock(block, synched) {
     const { transactions, ...pureBlock } = block;
-    await blocksRepo.upsert(pureBlock, blocksTable.field.height);
+    await this.blocksRepo.upsert(pureBlock, blocksTable.field.height);
     for ( const [index, transaction] of transactions.entries()) {
       const updatedTransaction = {
         ...transaction,
         [transactionsTable.field.blockId]: block.id,
         [transactionsTable.field.indexInBlock]: index,
       };
-      await transactionsRepo.upsert(updatedTransaction);
+      await this.transactionsRepo.upsert(updatedTransaction);
     }
   }
 
   async getMaxBlockHeight() {
-    return await blocksRepo.count();
+    return await this.blocksRepo.count();
   }
 
   async hasTransaction(transactionId) {
-    return await transactionsRepo.id(transactionId).exists();
+    return await this.transactionsRepo.id(transactionId).exists();
   }
 
   async getTransaction(transactionId) {
-    const transaction = firstOrNull(await transactionsRepo.id(transactionId).get());
+    const transaction = firstOrNull(await this.transactionsRepo.id(transactionId).get());
     if (!transaction) {
       let error = new Error(`Transaction ${transactionId} did not exist`);
       error.name = 'TransactionDidNotExistError';
@@ -377,7 +413,7 @@ class DAL {
   }
 
   async getTransactionsByTimestamp(offset, limit, order) {
-    return transactionsRepo.buildBaseQuery()
+    return this.transactionsRepo.buildBaseQuery()
       .orderBy(transactionsTable.field.timestamp, order)
       .offset(offset)
       .limit(limit);
@@ -387,7 +423,7 @@ class DAL {
     if (offset == null) {
       offset = 0;
     }
-    const baseQuery = transactionsRepo.buildBaseQuery()
+    const baseQuery = this.transactionsRepo.buildBaseQuery()
       .where(transactionsTable.field.blockId, blockId)
       .andWhere(transactionsTable.field.indexInBlock, '>=', offset);
 
@@ -398,7 +434,7 @@ class DAL {
   }
 
   async getInboundTransactions(walletAddress, fromTimestamp, limit, order) {
-    const transactionsQuery = transactionsRepo.buildBaseQuery()
+    const transactionsQuery = this.transactionsRepo.buildBaseQuery()
       .orderBy(transactionsTable.field.timestamp, order)
       .where(transactionsTable.field.recipientAddress, walletAddress)
       .limit(limit);
@@ -413,7 +449,7 @@ class DAL {
   }
 
   async getOutboundTransactions(walletAddress, fromTimestamp, limit, order) {
-    const transactionsQuery = transactionsRepo.buildBaseQuery()
+    const transactionsQuery = this.transactionsRepo.buildBaseQuery()
       .orderBy(transactionsTable.field.timestamp, order)
       .where(transactionsTable.field.senderAddress, walletAddress)
       .limit(limit);
@@ -432,7 +468,7 @@ class DAL {
       [transactionsTable.field.recipientAddress]: walletAddress,
       [transactionsTable.field.blockId]: blockId,
     };
-    return await transactionsRepo.get(recipientWalletAddressMatcher);
+    return await this.transactionsRepo.get(recipientWalletAddressMatcher);
   }
 
   async getOutboundTransactionsFromBlock(walletAddress, blockId) {
@@ -440,19 +476,19 @@ class DAL {
       [transactionsTable.field.senderAddress]: walletAddress,
       [transactionsTable.field.blockId]: blockId,
     };
-    return await transactionsRepo.get(senderWalletAddressMatcher);
+    return await this.transactionsRepo.get(senderWalletAddressMatcher);
   }
 
   async upsertDelegate(delegate) {
-    await delegatesRepo.upsert(delegate);
+    await this.delegatesRepo.upsert(delegate);
   }
 
   async hasDelegate(walletAddress) {
-    return await delegatesRepo.address(walletAddress).exists();
+    return await this.delegatesRepo.address(walletAddress).exists();
   }
 
   async getDelegate(walletAddress) {
-    const delegate = firstOrNull(await delegatesRepo.address(walletAddress).get());
+    const delegate = firstOrNull(await this.delegatesRepo.address(walletAddress).get());
     if (!delegate) {
       let error = new Error(`Delegate ${walletAddress} did not exist`);
       error.name = 'DelegateDidNotExistError';
@@ -463,7 +499,7 @@ class DAL {
   }
 
   async getDelegatesByVoteWeight(offset, limit, order) {
-    return delegatesRepo.buildBaseQuery()
+    return this.delegatesRepo.buildBaseQuery()
         .whereNot(delegatesTable.field.voteWeight, 0)
         .orderBy(delegatesTable.field.voteWeight, order)
         .offset(offset)
@@ -473,6 +509,37 @@ class DAL {
   async simplifyBlock(signedBlock) {
     let {forgerSignature, signatures, ...simpleBlock} = signedBlock;
     return simpleBlock;
+  }
+
+  repository(tableName, ...primaryKeys) {
+    const dataReadParser = parsers[tableName];
+    const basicRepositoryOps = (defaultMatcher) =>
+      ({
+        get: (equalityMatcher = defaultMatcher) => this.knexClient.findMatchingRecords(tableName, equalityMatcher, dataReadParser),
+        update: (updatedData, equalityMatcher = defaultMatcher) => this.knexClient.updateMatchingRecords(tableName, equalityMatcher, updatedData),
+        exists: (equalityMatcher = defaultMatcher) => this.knexClient.matchFound(tableName, equalityMatcher),
+        notExist: (equalityMatcher = defaultMatcher) => this.knexClient.noMatchFound(tableName, equalityMatcher),
+        count: (equalityMatcher = defaultMatcher) => this.knexClient.findMatchingRecordsCount(tableName, equalityMatcher),
+      });
+
+    const generateFieldOps = (fieldName) => ({
+      [fieldName]: (value) => basicRepositoryOps({[fieldName]: value})
+    });
+
+    const primaryKeyOps = primaryKeys.reduce((o, key) => ({ ...o, ...generateFieldOps(key)}), {});
+
+    return {
+      insert: (data) => this.knexClient.insert(tableName, data),
+      upsert: (data, ...byColumns) => this.knexClient.upsert(tableName, data, arrOrDefault(byColumns, primaryKeys)),
+      ...basicRepositoryOps({}),
+      ...primaryKeyOps,
+      buildBaseQuery: (equalityMatcher = {}) => this.knexClient.buildEqualityMatcherQuery(tableName, equalityMatcher, dataReadParser),
+      truncate: () => this.knexClient.truncate(tableName),
+    };
+  }
+
+  async destroy() {
+    return this.knexClient.destroy();
   }
 }
 

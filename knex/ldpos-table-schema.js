@@ -1,5 +1,5 @@
 module.exports = {
-  accountsTable : {
+  accountsTable: {
     name: 'accounts',
     field: {
       address : 'address',
@@ -16,10 +16,10 @@ module.exports = {
       lastTransactionTimestamp: 'lastTransactionTimestamp',
       nextForgingPublicKey: 'nextForgingPublicKey',
       nextMultisigPublicKey: 'nextMultisigPublicKey',
-      nextSigPublicKey: 'nextSigPublicKey'
-    }
+      nextSigPublicKey: 'nextSigPublicKey',
+    },
   },
-  transactionsTable : {
+  transactionsTable: {
     name: 'transactions',
     field: {
       id: 'id',
@@ -48,13 +48,12 @@ module.exports = {
       newNextSigPublicKey: 'newNextSigPublicKey',
       newNextSigKeyIndex: 'newNextSigKeyIndex',
       memberAddresses: 'memberAddresses',
-      requiredSignatureCount: 'requiredSignatureCount'
-
-    }
+      requiredSignatureCount: 'requiredSignatureCount',
+    },
   },
-  blocksTable : {
+  blocksTable: {
     name: 'blocks',
-    field : {
+    field: {
       id: 'id',
       height: 'height',
       timestamp: 'timestamp',
@@ -66,39 +65,39 @@ module.exports = {
       forgerSignature: 'forgerSignature',
       signatures: 'signatures',
       synched: 'synched',
-      numberOfTransactions : 'numberOfTransactions'
-    }
+      numberOfTransactions: 'numberOfTransactions',
+    },
   },
-  ballotsTable : {
+  ballotsTable: {
     name: 'ballots',
     field: {
       id: 'id', // matches transactionId
       type: 'type',
       voterAddress: 'voterAddress',
       delegateAddress: 'delegateAddress',
-      active: 'active'
-    }
+      active: 'active',
+    },
   },
-  delegatesTable : {
+  delegatesTable: {
     name: 'delegates',
     field: {
       address: 'address',
       voteWeight: 'voteWeight',
-      updateHeight: 'updateHeight'
-    }
+      updateHeight: 'updateHeight',
+    },
   },
-  multisig_membershipsTable : {
+  multisigMembershipsTable: {
     name: 'multisig_memberships',
     field: {
       multsigAccountAddress: 'multsigAccountAddress',
-      memberAddress: 'memberAddress'
-    }
+      memberAddress: 'memberAddress',
+    },
   },
-  storeTable : {
+  storeTable: {
     name: 'store',
     field : {
       key: 'key',
-      value: 'value'
-    }
-  }
-}
+      value: 'value',
+    },
+  },
+};

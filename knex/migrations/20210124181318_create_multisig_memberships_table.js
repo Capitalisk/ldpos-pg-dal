@@ -1,4 +1,4 @@
-const table = require("../ldpos-table-schema").multisig_membershipsTable;
+const table = require("../ldpos-table-schema").multisigMembershipsTable;
 const tableName = table.name;
 
 exports.up = function(knex) {

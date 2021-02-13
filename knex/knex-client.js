@@ -8,7 +8,7 @@ const {
   transactionsTable,
   blocksTable,
   delegatesTable,
-  multisig_membershipsTable, // TODO 222 RENAME THIS TABLE
+  multisigMembershipsTable,
   ballotsTable,
   storeTable
 } = require('../knex/ldpos-table-schema');

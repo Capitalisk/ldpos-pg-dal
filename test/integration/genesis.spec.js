@@ -6,7 +6,7 @@ const {
   transactionsTable,
   blocksTable,
   delegatesTable,
-  multisig_membershipsTable,
+  multisigMembershipsTable,
   ballotsTable,
   storeTable
 } = require('../../knex/ldpos-table-schema');
@@ -17,7 +17,7 @@ const accountsData = require('../fixtures/accounts');
 const transactionsData = require('../fixtures/transactions');
 const blocksData = require('../fixtures/blocks');
 const delegatesData = require('../fixtures/delegates');
-const multisig_membershipsData = require('../fixtures/multisig_memberships');
+const multisigMembershipsData = require('../fixtures/multisig_memberships');
 const ballotsData = require('../fixtures/ballots');
 const storeData = require('../fixtures/store');
 
@@ -31,7 +31,7 @@ const FIXTURES = {
   transactions: fixture(transactionsTable.name, transactionsData),
   blocks: fixture(blocksTable.name, blocksData),
   delegates: fixture(delegatesTable.name, delegatesData),
-  multisig_memberships: fixture(multisig_membershipsTable.name, multisig_membershipsData),
+  multisig_memberships: fixture(multisigMembershipsTable.name, multisigMembershipsData),
   ballots: fixture(ballotsTable.name, ballotsData),
   store: fixture(storeTable.name, storeData),
 };
@@ -82,7 +82,7 @@ describe('Integration tests', async () => {
 
   it('should initialise genesis multisig_memberships', async () => {
     const mockMemberships = [...firstOrDefault(Object.values(mockDAL.multisigMembers), [])];
-    const actualMemberships = (await dal.multisigMembershipsRepo.get()).map(ms => ms[multisig_membershipsTable.field.memberAddress]);
+    const actualMemberships = (await dal.multisigMembershipsRepo.get()).map(ms => ms[multisigMembershipsTable.field.memberAddress]);
     expect(actualMemberships).to.deep.equal(mockMemberships);
   });
 

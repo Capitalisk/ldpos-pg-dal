@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const {firstOrNull, isEmpty, arrOrDefault} = require('./utils');
 const KnexClient = require('../knex/knex-client');
-const {ballotsTable, multisig_membershipsTable, blocksTable, accountsTable, delegatesTable, transactionsTable, storeTable} = require('../knex/ldpos-table-schema');
+const {ballotsTable, multisigMembershipsTable, blocksTable, accountsTable, delegatesTable, transactionsTable, storeTable} = require('../knex/ldpos-table-schema');
 const parsers = require('./parser');
 
 const DEFAULT_NETWORK_SYMBOL = 'ldpos';
@@ -30,7 +30,7 @@ class DAL {
           get : () => msmRepo.multsigAccountAddress(address).get().then(r => r. map(a => a[primaryKeys[1]]))
         })
       };
-    })(multisig_membershipsTable.name, multisig_membershipsTable.field.multsigAccountAddress, multisig_membershipsTable.field.memberAddress);
+    })(multisigMembershipsTable.name, multisigMembershipsTable.field.multsigAccountAddress, multisigMembershipsTable.field.memberAddress);
     this.storeRepo = this.repository(storeTable.name, storeTable.field.key);
 
     if (options.clearAllDataOnInit) {
@@ -266,8 +266,8 @@ class DAL {
 
     for (let memberAddress of memberAddresses) {
       const multiSigMembership = {
-        [multisig_membershipsTable.field.multsigAccountAddress]: multisigAddress,
-        [multisig_membershipsTable.field.memberAddress]: memberAddress,
+        [multisigMembershipsTable.field.multsigAccountAddress]: multisigAddress,
+        [multisigMembershipsTable.field.memberAddress]: memberAddress,
       };
       await this.multisigMembershipsRepo.upsert(multiSigMembership);
     }

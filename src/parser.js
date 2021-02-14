@@ -68,7 +68,7 @@ const blocksTableParser = (blocks) => {
   ];
   parseAsNumber(blocks, bigIntegerFields);
   const base64Fields = [
-    transactionsTable.field.signatures,
+    blocksTable.field.signatures,
   ];
   parseBase64AsObject(blocks, base64Fields);
   // Just remove unused properties which are just there for analysis purposes.

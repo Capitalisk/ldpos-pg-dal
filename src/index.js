@@ -329,7 +329,9 @@ class DAL {
 
   async getLastBlockAtTimestamp(timestamp) {
     const blocks = await this.blocksRepo.buildBaseQuery()
-      .where(blocksTable.field.timestamp, '<=', timestamp);
+      .orderBy(blocksTable.field.timestamp, 'desc')
+      .where(blocksTable.field.timestamp, '<=', timestamp)
+      .limit(1);
     const block = firstOrNull(blocks);
     if (!block) {
       let error = new Error(
@@ -344,6 +346,7 @@ class DAL {
 
   async getBlocksBetweenHeights(fromHeight, toHeight, limit) {
     let blocks = await this.blocksRepo.buildBaseQuery()
+      .orderBy(blocksTable.field.height, 'asc')
       .where(blocksTable.field.height, '>', fromHeight)
       .andWhere(blocksTable.field.height, '<=', toHeight)
       .limit(limit);

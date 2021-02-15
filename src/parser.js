@@ -28,6 +28,18 @@ const parseBase64AsObject = (objects, keys) => {
   return objects.map(mapper);
 };
 
+const sanitizeTransactions = (transactions) => {
+  for (let txn of transactions) {
+    let props = Object.keys(txn);
+    for (let prop of props) {
+      if (txn[prop] == null) {
+        delete txn[prop];
+      }
+    }
+  }
+  return transactions;
+};
+
 const removePrivateBlockFields = (blocks) => {
   const mapper = (block) => {
     delete block.synched;
@@ -53,6 +65,7 @@ const transactionTableParser = (transactions) => {
     transactionsTable.field.newNextMultisigKeyIndex,
     transactionsTable.field.newNextSigKeyIndex,
   ];
+  sanitizeTransactions(transactions);
   parseAsNumber(transactions, bigIntegerFields);
   const base64Fields = [
     transactionsTable.field.signatures,

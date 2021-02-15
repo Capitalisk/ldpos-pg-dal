@@ -317,12 +317,6 @@ class DAL {
     for (let txn of txns) {
       delete txn.indexInBlock;
       delete txn.blockId;
-      let props = Object.keys(txn);
-      for (let prop of props) {
-        if (txn[prop] == null) {
-          delete txn[prop];
-        }
-      }
     }
     return txns;
   }

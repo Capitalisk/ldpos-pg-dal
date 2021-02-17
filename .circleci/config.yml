@@ -37,7 +37,7 @@ jobs:
       - run:
           name: Wait for DB
           command: |
-            ./wait-for-it.sh -h localhost -p 5432
+            ./wait-for-it.sh -h localhost -p 5432 -t 60
       - run:
           name: Run integration tests
           command: |

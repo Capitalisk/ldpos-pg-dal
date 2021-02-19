@@ -289,9 +289,9 @@ class DAL {
     if (height < 1) {
       height = 1;
     }
-    let offset = height - 1;
     let blocks = await this.blocksRepo.buildBaseQuery()
-      .offset(offset)
+      .orderBy(blocksTable.field.height, 'asc')
+      .where(blocksTable.field.height, '>=', height)
       .limit(limit);
     return blocks.map(block => this.simplifyBlock(block));
   }
@@ -300,9 +300,9 @@ class DAL {
     if (height < 1) {
       height = 1;
     }
-    let offset = height - 1;
     let blocks = await this.blocksRepo.buildBaseQuery()
-      .offset(offset)
+      .orderBy(blocksTable.field.height, 'asc')
+      .where(blocksTable.field.height, '>=', height)
       .limit(limit);
     await Promise.all(
       blocks.map(async (block) => {

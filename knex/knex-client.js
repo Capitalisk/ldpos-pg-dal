@@ -70,9 +70,8 @@ class KnexClient {
     return Promise.resolve(this.knex.raw(insertOrUpdateQuery));
   }
 
-  // todo - need to check if nested isTableEmpty works
   async areTablesEmpty() {
-    return Promise.all(this.tableNames.map(async (tableName) => this.isTableEmpty(tableName)))
+    return Promise.all(this.tableNames.map(tableName => this.isTableEmpty(tableName)))
       .then((emptyTables) => !emptyTables.includes(false));
   }
 
@@ -135,7 +134,7 @@ class KnexClient {
   }
 
   async truncateAllTables() {
-    return await Promise.all(this.tableNames.map((tableName) => this.truncate(tableName)));
+    return await Promise.all(this.tableNames.map(tableName => this.truncate(tableName)));
   }
 
   async destroy() {

@@ -13,8 +13,8 @@ const {
 
 class KnexClient {
   constructor(dalConfig) {
-    this.logger = dalConfig.logger || console;
     dalConfig = dalConfig || {};
+    this.logger = dalConfig.logger || console;
 
     this.knex = knex({
       ...defaultConfig,

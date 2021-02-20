@@ -31,24 +31,8 @@ class DAL {
         })
       };
     })(multisigMembershipsTable.name, multisigMembershipsTable.field.multsigAccountAddress, multisigMembershipsTable.field.memberAddress);
+
     this.storeRepo = this.repository(storeTable.name, storeTable.field.key);
-
-    if (options.clearAllDataOnInit) {
-      try {
-        await Promise.all([
-          this.ballotsRepo.truncate(),
-          this.accountsRepo.truncate(),
-          this.transactionsRepo.truncate(),
-          this.blocksRepo.truncate(),
-          this.delegatesRepo.truncate(),
-          this.multisigMembershipsRepo.truncate(),
-          this.storeRepo.truncate(),
-        ]);
-      } catch (error) {
-        this.logger.debug(error);
-      }
-    }
-
     await this.knexClient.migrateLatest();
 
     let {genesis} = options;
@@ -564,9 +548,20 @@ class DAL {
       upsert: (data, ...byColumns) => this.knexClient.upsert(tableName, data, arrOrDefault(byColumns, primaryKeys)),
       ...basicRepositoryOps({}),
       ...primaryKeyOps,
-      buildBaseQuery: (equalityMatcher = {}) => this.knexClient.buildEqualityMatcherQuery(tableName, equalityMatcher, dataReadParser),
-      truncate: () => this.knexClient.truncate(tableName),
+      buildBaseQuery: (equalityMatcher = {}) => this.knexClient.buildEqualityMatcherQuery(tableName, equalityMatcher, dataReadParser)
     };
+  }
+
+  /*
+    Clears data from all tables, be careful while using this method
+   */
+  async clearAllData() {
+    console.warn("Clearing data from all tables")
+    try {
+      await this.knexClient.truncateAllTables();
+    } catch (error) {
+      this.logger.debug(error);
+    }
   }
 
   async destroy() {

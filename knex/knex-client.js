@@ -3,21 +3,12 @@ const environment = process.env.ENVIRONMENT || 'development';
 const defaultConfig = require('../knexfile.js');
 const knex = require('knex');
 
-const {
-  accountsTable,
-  transactionsTable,
-  blocksTable,
-  delegatesTable,
-  multisigMembershipsTable,
-  ballotsTable,
-  storeTable
-} = require('../knex/ldpos-table-schema');
+const tableSchema = require('../knex/ldpos-table-schema');
 
 const {
   firstOrDefault,
   isNullOrUndefined,
   isNullOrUndefinedOrEmpty,
-  arrOrDefault
 } = require('../src/utils');
 
 class KnexClient {
@@ -51,6 +42,7 @@ class KnexClient {
         }
       });
     }
+    this.tableNames = Object.entries(tableSchema).map(([_, value]) => value.name)
   }
 
   async migrateLatest() {
@@ -77,24 +69,10 @@ class KnexClient {
     return Promise.resolve(this.knex.raw(insertOrUpdateQuery));
   }
 
+  // todo - need to check if nested isTableEmpty works
   async areTablesEmpty() {
-    const findAllTablesQuery = `select c.relname as tablename
-      from pg_class c
-      join pg_namespace n on n.oid = c.relnamespace
-      where c.relkind = 'r'
-      and n.nspname not in ('information_schema','pg_catalog');`;
-
-    const excludedTables = ['knex_migrations', 'knex_migrations_lock'];
-
-    return Promise.resolve(
-      this.knex
-        .raw(findAllTablesQuery)
-        .then((tables) =>
-          tables.rows.map((table) => table.tablename).filter((tableName) => !excludedTables.includes(tableName)),
-        )
-        .then((tableNames) => Promise.all(tableNames.map(async (tableName) => this.isTableEmpty(tableName))))
-        .then((emptyTables) => !emptyTables.includes(false)),
-    );
+    return Promise.all(this.tableNames.map(async (tableName) => this.isTableEmpty(tableName)))
+        .then((emptyTables) => !emptyTables.includes(false));
   }
 
   async insert(tableName, data) {
@@ -127,10 +105,6 @@ class KnexClient {
     return Promise.resolve(this.buildEqualityMatcherQuery(tableName, matcher, parser));
   }
 
-  async deleteMatchingRecords(tableName, matcher) {
-    return Promise.resolve(this.buildEqualityMatcherQuery(tableName, matcher).delete());
-  }
-
   async updateMatchingRecords(tableName, matcher, updatedData) {
     return Promise.resolve(this.buildEqualityMatcherQuery(tableName, matcher).update(updatedData));
   }
@@ -157,6 +131,12 @@ class KnexClient {
 
   async truncate(tableName) {
     return Promise.resolve(this.knex(tableName).truncate());
+  }
+
+  async truncateAllTables() {
+    for (const tableName of this.tableNames) {
+      await this.truncate(tableName);
+    }
   }
 
   async destroy() {

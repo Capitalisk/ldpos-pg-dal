@@ -555,12 +555,7 @@ class DAL {
     Clears data from all tables, be careful while using this method
    */
   async clearAllData() {
-    this.logger.warn('Clearing data from all tables')
-    try {
       await this.knexClient.truncateAllTables();
-    } catch (error) {
-      this.logger.debug(error);
-    }
   }
 
   async destroy() {

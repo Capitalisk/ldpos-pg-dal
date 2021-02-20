@@ -28,7 +28,11 @@ describe('Integration tests', async () => {
   });
 
   after(async () => {
-    await dal.clearAllData();
+    try {
+      await dal.clearAllData();
+    } catch (e) {
+      console.error(e);
+    }
     await dal.destroy();
   });
 

@@ -93,7 +93,6 @@ class KnexClient {
           const parsedData = parser(dataSet);
           return fn(parsedData);
         } catch (e) {
-          this.logger.error(e);
           return Promise.reject(e);
         }
       });

@@ -13,6 +13,7 @@ const {
 
 class KnexClient {
   constructor(dalConfig) {
+    this.logger = dalConfig.logger || console;
     dalConfig = dalConfig || {};
 
     this.knex = knex({
@@ -38,7 +39,7 @@ class KnexClient {
     if (isLocal(environment)) {
       this.knex.on('query', (...args) => {
         if (process.env.KNEX_DEBUG) {
-          console.info(args);
+          this.logger.info(args);
         }
       });
     }
@@ -72,7 +73,7 @@ class KnexClient {
   // todo - need to check if nested isTableEmpty works
   async areTablesEmpty() {
     return Promise.all(this.tableNames.map(async (tableName) => this.isTableEmpty(tableName)))
-        .then((emptyTables) => !emptyTables.includes(false));
+      .then((emptyTables) => !emptyTables.includes(false));
   }
 
   async insert(tableName, data) {
@@ -93,7 +94,7 @@ class KnexClient {
           const parsedData = parser(dataSet);
           return fn(parsedData);
         } catch (e) {
-          console.error(e);
+          this.logger.error(e);
           return Promise.reject(e);
         }
       });
@@ -134,9 +135,7 @@ class KnexClient {
   }
 
   async truncateAllTables() {
-    for (const tableName of this.tableNames) {
-      await this.truncate(tableName);
-    }
+    return await Promise.all(this.tableNames.map((tableName) => this.truncate(tableName)));
   }
 
   async destroy() {

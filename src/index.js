@@ -11,11 +11,10 @@ class DAL {
   constructor(config) {
     config = config || {};
     this.logger = config.logger || console;
+    this.knexClient = new KnexClient(config);
   }
 
   async init(options) {
-    this.knexClient = new KnexClient(options);
-
     this.ballotsRepo = this.repository(ballotsTable.name, ballotsTable.field.id);
     this.accountsRepo = this.repository(accountsTable.name, accountsTable.field.address);
     this.transactionsRepo = this.repository(transactionsTable.name, transactionsTable.field.id);
@@ -556,7 +555,7 @@ class DAL {
     Clears data from all tables, be careful while using this method
    */
   async clearAllData() {
-    console.warn("Clearing data from all tables")
+    this.logger.warn('Clearing data from all tables')
     try {
       await this.knexClient.truncateAllTables();
     } catch (error) {

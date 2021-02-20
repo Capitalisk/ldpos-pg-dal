@@ -3,38 +3,13 @@ const MockMemoryDAL = require('../mocks/dal');
 const genesis = require('../fixtures/genesis-functional');
 const {
   accountsTable,
-  transactionsTable,
-  blocksTable,
   delegatesTable,
   multisigMembershipsTable,
   ballotsTable,
-  storeTable
 } = require('../../knex/ldpos-table-schema');
 
 const {excludeNullPropertiesFromArr,sort, excludePropertyFromArr, firstOrDefault} = require('../../src/utils');
 
-const accountsData = require('../fixtures/accounts');
-const transactionsData = require('../fixtures/transactions');
-const blocksData = require('../fixtures/blocks');
-const delegatesData = require('../fixtures/delegates');
-const multisigMembershipsData = require('../fixtures/multisig_memberships');
-const ballotsData = require('../fixtures/ballots');
-const storeData = require('../fixtures/store');
-
-const fixture = (tableName, data) => ({
-  tableName,
-  data,
-});
-
-const FIXTURES = {
-  accounts: fixture(accountsTable.name, accountsData),
-  transactions: fixture(transactionsTable.name, transactionsData),
-  blocks: fixture(blocksTable.name, blocksData),
-  delegates: fixture(delegatesTable.name, delegatesData),
-  multisig_memberships: fixture(multisigMembershipsTable.name, multisigMembershipsData),
-  ballots: fixture(ballotsTable.name, ballotsData),
-  store: fixture(storeTable.name, storeData),
-};
 
 describe('Integration tests', async () => {
 
@@ -53,12 +28,12 @@ describe('Integration tests', async () => {
   });
 
   after(async () => {
-    await Promise.all(
-      [...Object.values(FIXTURES)].map(async ({tableName}) => {
-        return dal.knexClient.truncate(tableName);
-      })
-    );
-    await dal.knexClient.destroy();
+    try {
+      await dal.clearAllData();
+    } catch (e) {
+      console.error(e);
+    }
+    await dal.destroy();
   });
 
   it('should initialise genesis accounts', async () => {

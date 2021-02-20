@@ -3,26 +3,18 @@ const environment = process.env.ENVIRONMENT || 'development';
 const defaultConfig = require('../knexfile.js');
 const knex = require('knex');
 
-const {
-  accountsTable,
-  transactionsTable,
-  blocksTable,
-  delegatesTable,
-  multisigMembershipsTable,
-  ballotsTable,
-  storeTable
-} = require('../knex/ldpos-table-schema');
+const tableSchema = require('../knex/ldpos-table-schema');
 
 const {
   firstOrDefault,
   isNullOrUndefined,
   isNullOrUndefinedOrEmpty,
-  arrOrDefault
 } = require('../src/utils');
 
 class KnexClient {
   constructor(dalConfig) {
     dalConfig = dalConfig || {};
+    this.logger = dalConfig.logger || console;
 
     this.knex = knex({
       ...defaultConfig,
@@ -47,10 +39,11 @@ class KnexClient {
     if (isLocal(environment)) {
       this.knex.on('query', (...args) => {
         if (process.env.KNEX_DEBUG) {
-          console.info(args);
+          this.logger.info(args);
         }
       });
     }
+    this.tableNames = Object.entries(tableSchema).map(([_, value]) => value.name)
   }
 
   async migrateLatest() {
@@ -78,23 +71,8 @@ class KnexClient {
   }
 
   async areTablesEmpty() {
-    const findAllTablesQuery = `select c.relname as tablename
-      from pg_class c
-      join pg_namespace n on n.oid = c.relnamespace
-      where c.relkind = 'r'
-      and n.nspname not in ('information_schema','pg_catalog');`;
-
-    const excludedTables = ['knex_migrations', 'knex_migrations_lock'];
-
-    return Promise.resolve(
-      this.knex
-        .raw(findAllTablesQuery)
-        .then((tables) =>
-          tables.rows.map((table) => table.tablename).filter((tableName) => !excludedTables.includes(tableName)),
-        )
-        .then((tableNames) => Promise.all(tableNames.map(async (tableName) => this.isTableEmpty(tableName))))
-        .then((emptyTables) => !emptyTables.includes(false)),
-    );
+    return Promise.all(this.tableNames.map(tableName => this.isTableEmpty(tableName)))
+      .then((emptyTables) => !emptyTables.includes(false));
   }
 
   async insert(tableName, data) {
@@ -115,7 +93,6 @@ class KnexClient {
           const parsedData = parser(dataSet);
           return fn(parsedData);
         } catch (e) {
-          console.error(e);
           return Promise.reject(e);
         }
       });
@@ -125,10 +102,6 @@ class KnexClient {
 
   async findMatchingRecords(tableName, matcher, parser) {
     return Promise.resolve(this.buildEqualityMatcherQuery(tableName, matcher, parser));
-  }
-
-  async deleteMatchingRecords(tableName, matcher) {
-    return Promise.resolve(this.buildEqualityMatcherQuery(tableName, matcher).delete());
   }
 
   async updateMatchingRecords(tableName, matcher, updatedData) {
@@ -157,6 +130,10 @@ class KnexClient {
 
   async truncate(tableName) {
     return Promise.resolve(this.knex(tableName).truncate());
+  }
+
+  async truncateAllTables() {
+    return await Promise.all(this.tableNames.map(tableName => this.truncate(tableName)));
   }
 
   async destroy() {

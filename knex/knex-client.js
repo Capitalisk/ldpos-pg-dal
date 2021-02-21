@@ -43,7 +43,7 @@ class KnexClient {
         }
       });
     }
-    this.tableNames = Object.entries(tableSchema).map(([_, value]) => value.name)
+    this.tableNames = Object.entries(tableSchema).map(([_, value]) => value.name);
   }
 
   async migrateLatest() {
@@ -81,23 +81,11 @@ class KnexClient {
 
   buildEqualityMatcherQuery(tableName, matcher, parser) {
     const baseQuery = this.knex(tableName).select();
-    const query =  Object.entries(matcher).reduce((query, [key, value]) => query.where(key, value), baseQuery);
+    const query = Object.entries(matcher).reduce((query, [key, value]) => query.where(key, value), baseQuery);
     if (isNullOrUndefined(parser)) {
       return query;
     }
-    // Monkey-patching the query then functionality to support custom parsing.
-    const thenable = query.then;
-    query.then = (fn) => {
-      return thenable.call(query, dataSet => {
-        try {
-          const parsedData = parser(dataSet);
-          return fn(parsedData);
-        } catch (e) {
-          return Promise.reject(e);
-        }
-      });
-    };
-    return query;
+    return query.on('query-response', parser);
   }
 
   async findMatchingRecords(tableName, matcher, parser) {

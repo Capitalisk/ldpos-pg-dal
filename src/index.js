@@ -39,7 +39,7 @@ class DAL {
     let multisigWalletList = genesis.multisigWallets || [];
     this.networkSymbol = genesis.networkSymbol || DEFAULT_NETWORK_SYMBOL;
 
-    if (await this.knexClient.areTablesEmpty()) {
+    if (await this.knexClient.areAllTablesEmpty()) {
       await Promise.all(
         accounts.map(async (accountInfo) => {
           let {votes, ...accountWithoutVotes} = accountInfo;
@@ -555,7 +555,7 @@ class DAL {
     Clears data from all tables, be careful while using this method
    */
   async clearAllData() {
-      await this.knexClient.truncateAllTables();
+    await this.knexClient.truncateAllExistingTables();
   }
 
   async destroy() {

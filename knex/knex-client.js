@@ -11,6 +11,8 @@ const {
   isNullOrUndefinedOrEmpty,
 } = require('../src/utils');
 
+const TABLE_DOES_NOT_EXIST_ERROR_CODE = '42P01';
+
 class KnexClient {
   constructor(dalConfig) {
     dalConfig = dalConfig || {};
@@ -70,7 +72,7 @@ class KnexClient {
     return Promise.resolve(this.knex.raw(insertOrUpdateQuery));
   }
 
-  async areTablesEmpty() {
+  async areAllTablesEmpty() {
     return Promise.all(this.tableNames.map(tableName => this.isTableEmpty(tableName)))
       .then((emptyTables) => !emptyTables.includes(false));
   }
@@ -122,6 +124,21 @@ class KnexClient {
 
   async truncateAllTables() {
     return await Promise.all(this.tableNames.map(tableName => this.truncate(tableName)));
+  }
+
+  async truncateAllExistingTables() {
+    return await Promise.all(
+      this.tableNames.map(async (tableName) => {
+        try {
+          await this.truncate(tableName);
+        } catch (error) {
+          // Ignore table does not exist error.
+          if (error.code !== TABLE_DOES_NOT_EXIST_ERROR_CODE) {
+            throw error;
+          }
+        }
+      })
+    );
   }
 
   async destroy() {

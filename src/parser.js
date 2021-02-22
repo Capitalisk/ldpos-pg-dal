@@ -1,51 +1,43 @@
 const {accountsTable, transactionsTable, blocksTable, delegatesTable} = require('../knex/ldpos-table-schema');
 const {isNullOrUndefined} = require('./utils');
 
+const applyParserForEach = (objects, ...parsers) => {
+  return objects.map(obj => parsers.reduce((parsedObj, parser) => parser(parsedObj), obj));
+}
 // responsible for parsing string into bigInteger values
-const parseAsNumber = (objects, keys) => {
-  const mapper = (obj) => {
-    for (key of keys) {
-      if (key in obj && !isNullOrUndefined(obj[key])) {
-        obj[key] = parseInt(obj[key], 10);
-      }
+const numberParser = (obj, keys) => {
+  for (key of keys) {
+    if (key in obj && !isNullOrUndefined(obj[key])) {
+      obj[key] = parseInt(obj[key], 10);
     }
-    return obj;
-  };
-  return objects.map(mapper);
+  }
+  return obj;
 };
 
-const parseBase64AsObject = (objects, keys) => {
-  const mapper = (obj) => {
-    for (key of keys) {
-      if (key in obj && !isNullOrUndefined(obj[key])) {
-        obj[key] = JSON.parse(
-          Buffer.from(obj[key], 'base64').toString('utf8')
-        );
-      }
+const base64ObjParser = (obj, keys) => {
+  for (key of keys) {
+    if (key in obj && !isNullOrUndefined(obj[key])) {
+      obj[key] = JSON.parse(
+        Buffer.from(obj[key], 'base64').toString('utf8')
+      );
     }
-    return obj;
-  };
-  return objects.map(mapper);
+  }
+  return obj;
 };
 
-const sanitizeTransactions = (transactions) => {
-  for (let txn of transactions) {
+const sanitizeTransaction = (txn) => {
     let props = Object.keys(txn);
     for (let prop of props) {
       if (txn[prop] == null) {
         delete txn[prop];
       }
     }
-  }
-  return transactions;
+    return txn;
 };
 
-const removePrivateBlockFields = (blocks) => {
-  const mapper = (block) => {
+const removePrivateBlockField = (block) => {
     delete block.synched;
     return block;
-  };
-  return blocks.map(mapper);
 };
 
 // can be converted into two types of parsers -> From & To parser
@@ -54,7 +46,9 @@ const accountsTableParser = (accounts) => {
     accountsTable.field.lastTransactionTimestamp,
     accountsTable.field.updateHeight,
   ];
-  return parseAsNumber(accounts, bigIntegerFields);
+  return applyParserForEach(accounts,
+      (account) => numberParser(account, bigIntegerFields)
+  );
 };
 
 const transactionTableParser = (transactions) => {
@@ -65,12 +59,15 @@ const transactionTableParser = (transactions) => {
     transactionsTable.field.newNextMultisigKeyIndex,
     transactionsTable.field.newNextSigKeyIndex,
   ];
-  sanitizeTransactions(transactions);
-  parseAsNumber(transactions, bigIntegerFields);
   const base64Fields = [
     transactionsTable.field.signatures,
   ];
-  return parseBase64AsObject(transactions, base64Fields);
+
+  return applyParserForEach(transactions,
+      sanitizeTransaction,
+      (txn) => numberParser(txn, bigIntegerFields),
+      (txn) => base64ObjParser(txn, base64Fields)
+  )
 };
 
 const blocksTableParser = (blocks) => {
@@ -79,18 +76,21 @@ const blocksTableParser = (blocks) => {
     blocksTable.field.timestamp,
     blocksTable.field.nextForgingKeyIndex,
   ];
-  parseAsNumber(blocks, bigIntegerFields);
   const base64Fields = [
     blocksTable.field.signatures,
   ];
-  parseBase64AsObject(blocks, base64Fields);
-  // Just remove unused properties which are just there for analysis purposes.
-  return removePrivateBlockFields(blocks);
+  return applyParserForEach(blocks,
+      (block) => numberParser(block, bigIntegerFields),
+      (block) => base64ObjParser(block, base64Fields),
+      removePrivateBlockField
+  )
 };
 
 const delegatesTableParser = (delegates) => {
   const bigIntegerFields = [delegatesTable.field.updateHeight];
-  return parseAsNumber(delegates, bigIntegerFields);
+  return applyParserForEach(delegates,
+      (delegate) => numberParser(delegate, bigIntegerFields)
+  );
 };
 
 const Parsers = {

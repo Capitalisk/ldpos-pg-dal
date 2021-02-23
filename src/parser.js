@@ -3,7 +3,8 @@ const {isNullOrUndefined} = require('./utils');
 
 const applyParserForEach = (objects, ...parsers) => {
   return objects.map(obj => parsers.reduce((parsedObj, parser) => parser(parsedObj), obj));
-}
+};
+
 // responsible for parsing string into bigInteger values
 const numberParser = (obj, keys) => {
   for (key of keys) {
@@ -67,7 +68,7 @@ const transactionTableParser = (transactions) => {
       sanitizeTransaction,
       (txn) => numberParser(txn, bigIntegerFields),
       (txn) => base64ObjParser(txn, base64Fields)
-  )
+  );
 };
 
 const blocksTableParser = (blocks) => {
@@ -83,7 +84,7 @@ const blocksTableParser = (blocks) => {
       (block) => numberParser(block, bigIntegerFields),
       (block) => base64ObjParser(block, base64Fields),
       removePrivateBlockField
-  )
+  );
 };
 
 const delegatesTableParser = (delegates) => {

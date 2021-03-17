@@ -394,14 +394,14 @@ class DAL {
     pureBlock.signatures = Buffer.from(JSON.stringify(signatures), 'utf8').toString('base64');
     await this.blocksRepo.upsert(pureBlock, blocksTable.field.height);
     for ( const [index, transaction] of transactions.entries()) {
-      if (transaction.signatures) {
-        transaction.signatures = Buffer.from(JSON.stringify(transaction.signatures), 'utf8').toString('base64');
-      }
       const updatedTransaction = {
-        ...transaction,
-        [transactionsTable.field.blockId]: block.id,
-        [transactionsTable.field.indexInBlock]: index,
+        ...transaction
       };
+      if (transaction.signatures) {
+        updatedTransaction.signatures = Buffer.from(JSON.stringify(transaction.signatures), 'utf8').toString('base64');
+      }
+      updatedTransaction[transactionsTable.field.blockId] = block.id;
+      updatedTransaction[transactionsTable.field.indexInBlock] = index;
       await this.transactionsRepo.upsert(updatedTransaction);
     }
   }

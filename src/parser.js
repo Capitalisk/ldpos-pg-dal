@@ -44,7 +44,7 @@ const removePrivateBlockField = (block) => {
 const textToArray = (obj, keys) => {
   for (key of keys) {
     if (key in obj && !isNullOrUndefined(obj[key])) {
-      obj[key] = obj[key].split(",");
+      obj[key] = obj[key].split(',');
     }
   }
   return obj;

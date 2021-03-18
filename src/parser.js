@@ -41,6 +41,16 @@ const removePrivateBlockField = (block) => {
     return block;
 };
 
+const textToArray = (obj, keys) => {
+  for (key of keys) {
+    if (key in obj && !isNullOrUndefined(obj[key])) {
+      obj[key] = obj[key].split(",");
+    }
+  }
+  return obj;
+};
+
+
 // can be converted into two types of parsers -> From & To parser
 const accountsTableParser = (accounts) => {
   const bigIntegerFields = [
@@ -63,11 +73,15 @@ const transactionTableParser = (transactions) => {
   const base64Fields = [
     transactionsTable.field.signatures,
   ];
+  const textArrayFields = [
+    transactionsTable.field.memberAddresses,
+  ];
 
   return applyParserForEach(transactions,
       sanitizeTransaction,
       (txn) => numberParser(txn, bigIntegerFields),
-      (txn) => base64ObjParser(txn, base64Fields)
+      (txn) => base64ObjParser(txn, base64Fields),
+      (txn) => textToArray(txn, textArrayFields)
   );
 };
 

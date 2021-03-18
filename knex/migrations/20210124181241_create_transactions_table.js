@@ -29,8 +29,7 @@ exports.up = function(knex) {
             tbl.string(table.field.newSigPublicKey, 64).nullable();
             tbl.string(table.field.newNextSigPublicKey, 64).nullable();
             tbl.bigInteger(table.field.newNextSigKeyIndex).nullable();
-            // todo : need to check if specific type can be kept as text/json ( JSON serialized)
-            tbl.specificType(table.field.memberAddresses,'text ARRAY').nullable();
+            tbl.text(table.field.memberAddresses).nullable();
             tbl.integer(table.field.requiredSignatureCount).nullable();
         })
     )

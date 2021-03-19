@@ -397,6 +397,9 @@ class DAL {
       const updatedTransaction = {
         ...transaction
       };
+      if (transaction.memberAddresses) {
+        updatedTransaction.memberAddresses = transaction.memberAddresses.join(',');
+      }
       if (transaction.signatures) {
         updatedTransaction.signatures = Buffer.from(JSON.stringify(transaction.signatures), 'utf8').toString('base64');
       }

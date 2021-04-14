@@ -450,10 +450,11 @@ class DAL {
     return baseQuery.limit(limit);
   }
 
-  async getInboundTransactions(walletAddress, fromTimestamp, limit, order) {
+  async getInboundTransactions(walletAddress, fromTimestamp, offset, limit, order) {
     const transactionsQuery = this.transactionsRepo.buildBaseQuery()
       .orderBy(transactionsTable.field.timestamp, order)
       .where(transactionsTable.field.recipientAddress, walletAddress)
+      .offset(offset)
       .limit(limit);
     if (fromTimestamp != null ) {
       if (order === 'desc') {
@@ -465,10 +466,11 @@ class DAL {
     return transactionsQuery;
   }
 
-  async getOutboundTransactions(walletAddress, fromTimestamp, limit, order) {
+  async getOutboundTransactions(walletAddress, fromTimestamp, offset, limit, order) {
     const transactionsQuery = this.transactionsRepo.buildBaseQuery()
       .orderBy(transactionsTable.field.timestamp, order)
       .where(transactionsTable.field.senderAddress, walletAddress)
+      .offset(offset)
       .limit(limit);
     if (fromTimestamp != null) {
       if (order === 'desc') {

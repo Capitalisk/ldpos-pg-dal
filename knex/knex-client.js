@@ -65,7 +65,7 @@ class KnexClient {
 
     const conflictColumns = byColumns.map((c) => `"${c.toString()}"`).join(',');
 
-    let insertOrUpdateQuery = `${insert} ON CONFLICT( ${conflictColumns}) DO ${update}`;
+    let insertOrUpdateQuery = `${insert} ON CONFLICT(${conflictColumns}) DO ${update}`;
     insertOrUpdateQuery = !isNullOrUndefinedOrEmpty(keepValues, true) ? `${insertOrUpdateQuery}, ${keepValues}` : insertOrUpdateQuery;
     insertOrUpdateQuery = insertOrUpdateQuery.replace(`update "${tableName}"`, 'update');
     insertOrUpdateQuery = insertOrUpdateQuery.replace(`"${tableName}"`, tableName);

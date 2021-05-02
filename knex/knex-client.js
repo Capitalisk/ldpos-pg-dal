@@ -13,12 +13,16 @@ const {
 
 const TABLE_DOES_NOT_EXIST_ERROR_CODE = '42P01';
 
+const KNEX_CLIENTS = {
+  POSTGRES_CLIENT: "pg",
+  SQLITE_CLIENT: "sqlite3"
+}
+
 class KnexClient {
   constructor(dalConfig) {
     dalConfig = dalConfig || {};
     this.logger = dalConfig.logger || console;
-
-    this.knex = knex({
+    this.knexConfig = {
       ...defaultConfig,
       connection: {
         ...defaultConfig.connection,
@@ -36,8 +40,8 @@ class KnexClient {
         ...defaultConfig.seeds,
         ...dalConfig.seeds,
       },
-    });
-
+    }
+    this.knex = knex(this.knexConfig)
     if (isLocal(environment)) {
       this.knex.on('query', (...args) => {
         if (process.env.KNEX_DEBUG) {
@@ -50,6 +54,8 @@ class KnexClient {
     }
     this.tableNames = Object.entries(tableSchema).map(([_, value]) => value.name);
   }
+
+  isSqliteClient = () => this.knexConfig.client === KNEX_CLIENTS.SQLITE_CLIENT
 
   async migrateLatest() {
     return this.knex.migrate.latest();

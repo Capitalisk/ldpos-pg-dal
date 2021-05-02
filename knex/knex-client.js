@@ -44,6 +44,9 @@ class KnexClient {
           this.logger.info(args);
         }
       });
+      this.knex.on('query-error', (...args) => {
+          this.logger.error(args);
+      });
     }
     this.tableNames = Object.entries(tableSchema).map(([_, value]) => value.name);
   }
@@ -53,7 +56,7 @@ class KnexClient {
   }
 
   async upsert(tableName, data, byColumns, columnsToRetain = []) {
-    const update = this.knex(tableName)
+    const update = this.knex.queryBuilder()
       .update(data)
       .toString();
 
@@ -101,7 +104,7 @@ class KnexClient {
   async findMatchingRecordsCount(tableName, matcher) {
     return Promise.resolve(
       this.buildEqualityMatcherQuery(tableName, matcher)
-        .count()
+        .count("*", {as : "count"})
         .then((rows) => firstOrDefault(rows, {count: '0'})).then(({count}) => parseInt(count, 10))
     );
   }

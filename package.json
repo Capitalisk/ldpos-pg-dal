@@ -4,7 +4,8 @@
   "description": "Knex Postgres Data Access Layer for LDPoS",
   "main": "src/index.js",
   "scripts": {
-    "test:integration": "mocha test/integration --reporter spec --timeout 10000 --slow 10000 -r chai/register-expect",
+    "test:pg": "mocha test/integration --reporter spec --timeout 10000 --slow 10000 -r chai/register-expect",
+    "test:sqlite": "USE_SQLITE=true mocha test/integration --reporter spec --timeout 10000 --slow 10000 -r chai/register-expect",
     "migrate:make": "knex migrate:make",
     "migrate": "knex migrate:latest",
     "migrate:rollback": "knex migrate:rollback",
@@ -40,5 +41,8 @@
   "dependencies": {
     "knex": "^0.21.16",
     "pg": "^8.5.1"
+  },
+  "optionalDependencies": {
+    "sqlite3": "https://github.com/sacOO7/node-sqlite3"
   }
 }

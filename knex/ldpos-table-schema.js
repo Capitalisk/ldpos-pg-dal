@@ -66,6 +66,7 @@ module.exports = {
       signatures: 'signatures',
       synched: 'synched',
       numberOfTransactions: 'numberOfTransactions',
+      trailerSignature: 'trailerSignature',
     },
   },
   ballotsTable: {

@@ -14,8 +14,8 @@ const {
 const TABLE_DOES_NOT_EXIST_ERROR_CODE = '42P01';
 
 const KNEX_CLIENTS = {
-  POSTGRES_CLIENT: "pg",
-  SQLITE_CLIENT: "sqlite3"
+  POSTGRES_CLIENT: 'pg',
+  SQLITE_CLIENT: 'sqlite3'
 }
 
 class KnexClient {
@@ -47,9 +47,6 @@ class KnexClient {
         if (process.env.KNEX_DEBUG) {
           this.logger.info(args);
         }
-      });
-      this.knex.on('query-error', (...args) => {
-          this.logger.error(args);
       });
     }
     this.tableNames = Object.entries(tableSchema).map(([_, value]) => value.name);
@@ -110,7 +107,7 @@ class KnexClient {
   async findMatchingRecordsCount(tableName, matcher) {
     return Promise.resolve(
       this.buildEqualityMatcherQuery(tableName, matcher)
-        .count("*", {as : "count"})
+        .count('*', {as : 'count'})
         .then((rows) => firstOrDefault(rows, {count: '0'})).then(({count}) => parseInt(count, 10))
     );
   }

@@ -5,16 +5,15 @@ const {
     numberParser,
     removePrivateBlockField,
     sanitizeTransaction,
-    textToArray
-} = require("./parsers");
+    textToArray,
+} = require('./parsers');
 
 const {accountsTable, transactionsTable, blocksTable, delegatesTable, ballotsTable} = require('../../knex/ldpos-table-schema');
 
 class DalParser {
-
     constructor(knexClient) {
-        this.knexClient = knexClient
-        this.initializeParsers()
+        this.knexClient = knexClient;
+        this.initializeParsers();
     }
 
     generateAccountsTableParsers = () => {
@@ -22,7 +21,7 @@ class DalParser {
             accountsTable.field.lastTransactionTimestamp,
             accountsTable.field.updateHeight,
         ];
-        let parsers = [(account) => numberParser(account, bigIntegerFields)]
+        let parsers = [(account) => numberParser(account, bigIntegerFields)];
 
         if (this.knexClient.isSqliteClient()) {
             const integerFields = [
@@ -30,11 +29,11 @@ class DalParser {
                 accountsTable.field.nextMultisigKeyIndex,
                 accountsTable.field.nextSigKeyIndex,
                 accountsTable.field.requiredSignatureCount,
-            ]
-            parsers.push((account) => numberParser(account, integerFields))
+            ];
+            parsers.push((account) => numberParser(account, integerFields));
         }
 
-        return parsers
+        return parsers;
     };
 
     generateTransactionTableParsers = () => {
@@ -57,17 +56,17 @@ class DalParser {
             sanitizeTransaction,
             (txn) => numberParser(txn, bigIntegerFields),
             (txn) => base64ObjParser(txn, base64Fields),
-            (txn) => textToArray(txn, textArrayFields)
-        ]
+            (txn) => textToArray(txn, textArrayFields),
+        ];
 
         if (this.knexClient.isSqliteClient()) {
             const integerFields = [
                 transactionsTable.field.indexInBlock,
-                transactionsTable.field.requiredSignatureCount
-            ]
-            parsers.push((txn) => numberParser(txn, integerFields))
+                transactionsTable.field.requiredSignatureCount,
+            ];
+            parsers.push((txn) => numberParser(txn, integerFields));
         }
-        return parsers
+        return parsers;
     };
 
     generateBlocksTableParser = () => {
@@ -84,51 +83,51 @@ class DalParser {
         let parsers = [
             (block) => numberParser(block, bigIntegerFields),
             (block) => base64ObjParser(block, base64Fields),
-            removePrivateBlockField
-        ]
+            removePrivateBlockField,
+        ];
 
         if (this.knexClient.isSqliteClient()) {
             const booleanFields = [
-                blocksTable.field.active
-            ]
+                blocksTable.field.active,
+            ];
             const integerFields = [
-                blocksTable.field.numberOfTransactions
-            ]
+                blocksTable.field.numberOfTransactions,
+            ];
             parsers.push(
                 (block) => numberParser(block, integerFields),
-                (block) => booleanParser(block, booleanFields)
-            )
+                (block) => booleanParser(block, booleanFields),
+            );
         }
-        return parsers
+        return parsers;
     };
 
     generateDelegatesTableParser = () => {
         const bigIntegerFields = [delegatesTable.field.updateHeight];
         return [
-            (delegate) => numberParser(delegate, bigIntegerFields)
-        ]
+            (delegate) => numberParser(delegate, bigIntegerFields),
+        ];
     };
 
     generateBallotsTableParser = () => {
-        let parsers = []
+        let parsers = [];
         if (this.knexClient.isSqliteClient()) {
             const booleanFields = [
-                ballotsTable.field.active
-            ]
+                ballotsTable.field.active,
+            ];
             parsers.push(
                 (ballot) => booleanParser(ballot, booleanFields),
-            )
+            );
         }
-        return parsers
+        return parsers;
     };
 
     initializeParsers = () => {
-        this.accountTableParsers = this.generateAccountsTableParsers()
-        this.transactionsTableParsers = this.generateTransactionTableParsers()
-        this.blocksTableParsers = this.generateBlocksTableParser()
-        this.delegatesTableParsers = this.generateDelegatesTableParser()
-        this.ballotsTableParsers = this.generateBallotsTableParser()
-    }
+        this.accountTableParsers = this.generateAccountsTableParsers();
+        this.transactionsTableParsers = this.generateTransactionTableParsers();
+        this.blocksTableParsers = this.generateBlocksTableParser();
+        this.delegatesTableParsers = this.generateDelegatesTableParser();
+        this.ballotsTableParsers = this.generateBallotsTableParser();
+    };
 
     getAppliedParsers = () => {
         let appliedParsers = {
@@ -136,12 +135,12 @@ class DalParser {
             [transactionsTable.name]: (transactions) => applyParserForEach(transactions, ...this.transactionsTableParsers),
             [blocksTable.name]: (blocks) => applyParserForEach(blocks, ...this.blocksTableParsers),
             [delegatesTable.name]: (delegates) => applyParserForEach(delegates, ...this.delegatesTableParsers),
-        }
+        };
         if (this.ballotsTableParsers.length > 0) { // extra check for sqlite based parsers
-            appliedParsers[ballotsTable.name] = (ballots) => applyParserForEach(ballots, ...this.ballotsTableParsers)
+            appliedParsers[ballotsTable.name] = (ballots) => applyParserForEach(ballots, ...this.ballotsTableParsers);
         }
-        return appliedParsers
-    }
+        return appliedParsers;
+    };
 }
 
-module.exports = DalParser
+module.exports = DalParser;

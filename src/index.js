@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const {firstOrNull, isEmpty, arrOrDefault} = require('./utils');
 const KnexClient = require('../knex/knex-client');
 const {ballotsTable, multisigMembershipsTable, blocksTable, accountsTable, delegatesTable, transactionsTable, storeTable} = require('../knex/ldpos-table-schema');
-const DalParser = require("./parsers");
+const DalParser = require('./parsers');
 const DEFAULT_NETWORK_SYMBOL = 'ldpos';
 const ID_BYTE_SIZE = 20;
 
@@ -11,7 +11,7 @@ class DAL {
     config = config || {};
     this.logger = config.logger || console;
     this.knexClient = new KnexClient(config);
-    this.parsers = new DalParser(this.knexClient).getAppliedParsers()
+    this.parsers = new DalParser(this.knexClient).getAppliedParsers();
   }
 
   async init(options) {

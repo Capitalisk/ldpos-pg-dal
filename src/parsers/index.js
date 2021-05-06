@@ -130,7 +130,7 @@ class DalParser {
         this.ballotsTableParsers = this.generateBallotsTableParser();
     };
 
-    getAppliedParsers = () => {
+    getRecordedParsers = () => {
         let appliedParsers = {
             [accountsTable.name]: (accounts) => applyParserForEach(accounts, ...this.accountTableParsers),
             [transactionsTable.name]: (transactions) => applyParserForEach(transactions, ...this.transactionsTableParsers),

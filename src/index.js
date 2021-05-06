@@ -11,7 +11,7 @@ class DAL {
     config = config || {};
     this.logger = config.logger || console;
     this.knexClient = new KnexClient(config);
-    this.parsers = new DalParser(this.knexClient).getAppliedParsers();
+    this.parsers = new DalParser(this.knexClient).getRecordedParsers();
   }
 
   async init(options) {

@@ -344,7 +344,6 @@ class DAL {
     return this.simplifyBlock(block);
   }
 
-  // todo : Need to check this again, if this is index based or field based
   async getSignedBlockAtHeight(height) {
     const heightMatcher = {[blocksTable.field.height]: height};
     const block = firstOrNull(await this.blocksRepo.get(heightMatcher));
@@ -360,12 +359,8 @@ class DAL {
     return block;
   }
 
-  async hasBlock(id) {
-    return await this.blocksRepo.id(id).exists();
-  }
-
-  async getBlock(id) {
-    const block = firstOrNull(this.blocksRepo.id(id).get());
+  async getSignedBlock(id) {
+    const block = firstOrNull(await this.blocksRepo.id(id).get());
     if (!block) {
       let error = new Error(
         `No block existed with ID ${id}`
@@ -374,6 +369,15 @@ class DAL {
       error.type = 'InvalidActionError';
       throw error;
     }
+    return block;
+  }
+
+  async hasBlock(id) {
+    return await this.blocksRepo.id(id).exists();
+  }
+
+  async getBlock(id) {
+    const block = await this.getSignedBlock(id);
     return this.simplifyBlock(block);
   }
 
@@ -385,10 +389,6 @@ class DAL {
     return blocks.map(block => this.simplifyBlock(block));
   }
 
-  // todo for update operations, return number of records updated
-  // todo check what are index based operations
-  // todo what is synched field being used for
-  // todo check if height based upsert can be replaced with id
   async upsertBlock(block, synched) {
     const { transactions, signatures, ...pureBlock } = block;
     pureBlock.signatures = Buffer.from(JSON.stringify(signatures), 'utf8').toString('base64');

@@ -10,9 +10,10 @@ exports.up = function (knex) {
       tbl.string(table.field.previousBlockId, 40).nullable();
       tbl.string(table.field.forgerAddress, 50).notNullable().index();
       tbl.string(table.field.forgingPublicKey, 64).notNullable();
+      tbl.string(table.field.nextForgingPublicKey, 64).notNullable();
+      tbl.integer(table.field.nextForgingKeyIndex).notNullable();
       tbl.string(table.field.forgerSignature, 32984).notNullable();
       tbl.text(table.field.signatures).notNullable();
-      tbl.text(table.field.trailerSignature);
       tbl.integer(table.field.numberOfTransactions);
       tbl.boolean(table.field.synched).defaultTo(false);
     }),

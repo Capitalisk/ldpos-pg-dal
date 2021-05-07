@@ -27,18 +27,18 @@ const base64ObjParser = (obj, keys) => {
 };
 
 const sanitizeTransaction = (txn) => {
-    let props = Object.keys(txn);
-    for (let prop of props) {
-      if (txn[prop] == null) {
-        delete txn[prop];
-      }
+  let props = Object.keys(txn);
+  for (let prop of props) {
+    if (txn[prop] == null) {
+      delete txn[prop];
     }
-    return txn;
+  }
+  return txn;
 };
 
 const removePrivateBlockField = (block) => {
-    delete block.synched;
-    return block;
+  delete block.synched;
+  return block;
 };
 
 const textToArray = (obj, keys) => {
@@ -55,10 +55,13 @@ const textToArray = (obj, keys) => {
 const accountsTableParser = (accounts) => {
   const bigIntegerFields = [
     accountsTable.field.lastTransactionTimestamp,
+    accountsTable.field.nextSigKeyIndex,
+    accountsTable.field.nextForgingKeyIndex,
+    accountsTable.field.nextMultisigKeyIndex,
     accountsTable.field.updateHeight,
   ];
   return applyParserForEach(accounts,
-      (account) => numberParser(account, bigIntegerFields)
+    (account) => numberParser(account, bigIntegerFields)
   );
 };
 
@@ -78,10 +81,10 @@ const transactionTableParser = (transactions) => {
   ];
 
   return applyParserForEach(transactions,
-      sanitizeTransaction,
-      (txn) => numberParser(txn, bigIntegerFields),
-      (txn) => base64ObjParser(txn, base64Fields),
-      (txn) => textToArray(txn, textArrayFields)
+    sanitizeTransaction,
+    (txn) => numberParser(txn, bigIntegerFields),
+    (txn) => base64ObjParser(txn, base64Fields),
+    (txn) => textToArray(txn, textArrayFields)
   );
 };
 
@@ -95,16 +98,16 @@ const blocksTableParser = (blocks) => {
     blocksTable.field.signatures,
   ];
   return applyParserForEach(blocks,
-      (block) => numberParser(block, bigIntegerFields),
-      (block) => base64ObjParser(block, base64Fields),
-      removePrivateBlockField
+    (block) => numberParser(block, bigIntegerFields),
+    (block) => base64ObjParser(block, base64Fields),
+    removePrivateBlockField
   );
 };
 
 const delegatesTableParser = (delegates) => {
   const bigIntegerFields = [delegatesTable.field.updateHeight];
   return applyParserForEach(delegates,
-      (delegate) => numberParser(delegate, bigIntegerFields)
+    (delegate) => numberParser(delegate, bigIntegerFields)
   );
 };
 

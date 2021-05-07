@@ -11,7 +11,7 @@ exports.up = function (knex) {
       tbl.string(table.field.forgerAddress, 50).notNullable().index();
       tbl.string(table.field.forgingPublicKey, 64).notNullable();
       tbl.string(table.field.nextForgingPublicKey, 64).notNullable();
-      tbl.integer(table.field.nextForgingKeyIndex).notNullable();
+      tbl.bigInteger(table.field.nextForgingKeyIndex).notNullable();
       tbl.string(table.field.forgerSignature, 32984).notNullable();
       tbl.text(table.field.signatures).notNullable();
       tbl.integer(table.field.numberOfTransactions);

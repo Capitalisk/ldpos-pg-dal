@@ -9,16 +9,16 @@ exports.up = function (knex) {
       tbl.bigInteger(table.field.balance).notNullable().index();
       tbl.string(table.field.forgingPublicKey, 64).nullable();
       tbl.string(table.field.multisigPublicKey, 64).nullable();
-      tbl.integer(table.field.nextMultisigKeyIndex).nullable();
+      tbl.bigInteger(table.field.nextMultisigKeyIndex).nullable();
       tbl.string(table.field.sigPublicKey, 64).nullable();
-      tbl.integer(table.field.nextSigKeyIndex).nullable();
+      tbl.bigInteger(table.field.nextSigKeyIndex).nullable();
       tbl.integer(table.field.requiredSignatureCount).nullable();
-      tbl.bigInteger(table.field.updateHeight).nullable();
-      tbl.bigInteger(table.field.lastTransactionTimestamp).nullable();
       tbl.string(table.field.nextForgingPublicKey, 64).nullable();
-      tbl.integer(table.field.nextForgingKeyIndex).nullable();
+      tbl.bigInteger(table.field.nextForgingKeyIndex).nullable();
       tbl.string(table.field.nextMultisigPublicKey, 64).nullable();
       tbl.string(table.field.nextSigPublicKey, 64).nullable();
+      tbl.bigInteger(table.field.updateHeight).nullable();
+      tbl.bigInteger(table.field.lastTransactionTimestamp).nullable();
     }),
   )
 };

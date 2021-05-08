@@ -96,6 +96,7 @@ const blocksTableParser = (blocks) => {
   ];
   const base64Fields = [
     blocksTable.field.signatures,
+    blocksTable.field.forgingKeyChanges,
   ];
   return applyParserForEach(blocks,
     (block) => numberParser(block, bigIntegerFields),

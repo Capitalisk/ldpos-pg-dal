@@ -390,8 +390,9 @@ class DAL {
   }
 
   async upsertBlock(block, synched) {
-    const { transactions, signatures, ...pureBlock } = block;
+    const { transactions, signatures, forgingKeyChanges, ...pureBlock } = block;
     pureBlock.signatures = Buffer.from(JSON.stringify(signatures), 'utf8').toString('base64');
+    pureBlock.forgingKeyChanges = Buffer.from(JSON.stringify(forgingKeyChanges), 'utf8').toString('base64');
     await this.blocksRepo.upsert(pureBlock, blocksTable.field.height);
     for (const [index, transaction] of transactions.entries()) {
       const updatedTransaction = {

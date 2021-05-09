@@ -60,6 +60,8 @@ module.exports = {
       previousBlockId: 'previousBlockId',
       forgerAddress: 'forgerAddress',
       forgingPublicKey: 'forgingPublicKey',
+      nextForgingPublicKey: 'nextForgingPublicKey',
+      nextForgingKeyIndex: 'nextForgingKeyIndex',
       forgerSignature: 'forgerSignature',
       signatures: 'signatures',
       synched: 'synched',

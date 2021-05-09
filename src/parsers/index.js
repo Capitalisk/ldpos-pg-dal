@@ -78,7 +78,6 @@ class DalParser {
 
         const base64Fields = [
             blocksTable.field.signatures,
-            blocksTable.field.trailerSignature,
         ];
 
         let parsers = [

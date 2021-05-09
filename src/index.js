@@ -344,7 +344,6 @@ class DAL {
     return this.simplifyBlock(block);
   }
 
-  // todo : Need to check this again, if this is index based or field based
   async getSignedBlockAtHeight(height) {
     const heightMatcher = {[blocksTable.field.height]: height};
     const block = firstOrNull(await this.blocksRepo.get(heightMatcher));
@@ -360,12 +359,8 @@ class DAL {
     return block;
   }
 
-  async hasBlock(id) {
-    return await this.blocksRepo.id(id).exists();
-  }
-
-  async getBlock(id) {
-    const block = firstOrNull(this.blocksRepo.id(id).get());
+  async getSignedBlock(id) {
+    const block = firstOrNull(await this.blocksRepo.id(id).get());
     if (!block) {
       let error = new Error(
         `No block existed with ID ${id}`
@@ -374,6 +369,15 @@ class DAL {
       error.type = 'InvalidActionError';
       throw error;
     }
+    return block;
+  }
+
+  async hasBlock(id) {
+    return await this.blocksRepo.id(id).exists();
+  }
+
+  async getBlock(id) {
+    const block = await this.getSignedBlock(id);
     return this.simplifyBlock(block);
   }
 
@@ -385,16 +389,11 @@ class DAL {
     return blocks.map(block => this.simplifyBlock(block));
   }
 
-  // todo for update operations, return number of records updated
-  // todo check what are index based operations
-  // todo what is synched field being used for
-  // todo check if height based upsert can be replaced with id
   async upsertBlock(block, synched) {
-    const { transactions, signatures, trailerSignature, ...pureBlock } = block;
+    const { transactions, signatures, ...pureBlock } = block;
     pureBlock.signatures = Buffer.from(JSON.stringify(signatures), 'utf8').toString('base64');
-    pureBlock.trailerSignature = Buffer.from(JSON.stringify(trailerSignature), 'utf8').toString('base64');
     await this.blocksRepo.upsert(pureBlock, blocksTable.field.height);
-    for ( const [index, transaction] of transactions.entries()) {
+    for (const [index, transaction] of transactions.entries()) {
       const updatedTransaction = {
         ...transaction
       };
@@ -451,13 +450,30 @@ class DAL {
     return baseQuery.limit(limit);
   }
 
+  async getAccountTransactions(walletAddress, fromTimestamp, offset, limit, order) {
+    const transactionsQuery = this.transactionsRepo.buildBaseQuery()
+      .orderBy(transactionsTable.field.timestamp, order)
+      .where(transactionsTable.field.recipientAddress, walletAddress)
+      .orWhere(transactionsTable.field.senderAddress, walletAddress)
+      .offset(offset)
+      .limit(limit);
+    if (fromTimestamp != null) {
+      if (order === 'desc') {
+        transactionsQuery.andWhere(transactionsTable.field.timestamp, '<=', fromTimestamp);
+      } else {
+        transactionsQuery.andWhere(transactionsTable.field.timestamp, '>=', fromTimestamp);
+      }
+    }
+    return transactionsQuery;
+  }
+
   async getInboundTransactions(walletAddress, fromTimestamp, offset, limit, order) {
     const transactionsQuery = this.transactionsRepo.buildBaseQuery()
       .orderBy(transactionsTable.field.timestamp, order)
       .where(transactionsTable.field.recipientAddress, walletAddress)
       .offset(offset)
       .limit(limit);
-    if (fromTimestamp != null ) {
+    if (fromTimestamp != null) {
       if (order === 'desc') {
         transactionsQuery.andWhere(transactionsTable.field.timestamp, '<=', fromTimestamp);
       } else {
@@ -528,7 +544,7 @@ class DAL {
   }
 
   simplifyBlock(signedBlock) {
-    let {forgerSignature, signatures, trailerSignature, ...simpleBlock} = signedBlock;
+    let {forgerSignature, signatures, ...simpleBlock} = signedBlock;
     return simpleBlock;
   }
 

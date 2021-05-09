@@ -45,7 +45,7 @@ class DAL {
           let {votes, ...accountWithoutVotes} = accountInfo;
           let account = {
             ...accountWithoutVotes,
-            type: 'sig',
+            type: accountWithoutVotes.type || 'sig',
             updateHeight: 0,
           };
           await this.upsertAccount(account);
@@ -392,6 +392,7 @@ class DAL {
   async upsertBlock(block, synched) {
     const { transactions, signatures, ...pureBlock } = block;
     pureBlock.signatures = Buffer.from(JSON.stringify(signatures), 'utf8').toString('base64');
+    pureBlock.synched = synched || false;
     await this.blocksRepo.upsert(pureBlock, blocksTable.field.height);
     for (const [index, transaction] of transactions.entries()) {
       const updatedTransaction = {

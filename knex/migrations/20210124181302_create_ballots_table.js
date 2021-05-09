@@ -8,7 +8,7 @@ exports.up = function (knex) {
       tbl.string(table.field.type, 20).notNullable().index();
       tbl.string(table.field.voterAddress, 50).notNullable().index();
       tbl.string(table.field.delegateAddress, 50).notNullable().index();
-      tbl.boolean(table.field.active).defaultTo(true).notNullable().index();
+      tbl.boolean(table.field.active).notNullable().index();
     }),
   )
 };

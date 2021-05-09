@@ -5,7 +5,7 @@ exports.up = function (knex) {
   return Promise.resolve(
     knex.schema.createTable(tableName, (tbl) => {
       tbl.string(table.field.address, 50).primary().notNullable().index();
-      tbl.string(table.field.type, 30).defaultTo('sig').notNullable();
+      tbl.string(table.field.type, 30).notNullable();
       tbl.bigInteger(table.field.balance).notNullable().index();
       tbl.string(table.field.forgingPublicKey, 64).nullable();
       tbl.string(table.field.multisigPublicKey, 64).nullable();

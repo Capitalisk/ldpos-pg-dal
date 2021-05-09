@@ -53,7 +53,9 @@ class KnexClient {
     this.tableNames = Object.entries(tableSchema).map(([_, value]) => value.name);
   }
 
-  isSqliteClient = () => this.knexConfig.client === KNEX_CLIENTS.SQLITE_CLIENT;
+  isSqliteClient() {
+    return this.knexConfig.client === KNEX_CLIENTS.SQLITE_CLIENT;
+  }
 
   async migrateLatest() {
     return this.knex.migrate.latest();

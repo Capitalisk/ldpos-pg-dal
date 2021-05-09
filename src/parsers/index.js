@@ -16,7 +16,7 @@ class DalParser {
     this.initializeParsers();
   }
 
-  generateAccountsTableParsers = () => {
+  generateAccountsTableParsers() {
     const bigIntegerFields = [
       accountsTable.field.lastTransactionTimestamp,
       accountsTable.field.nextSigKeyIndex,
@@ -36,7 +36,7 @@ class DalParser {
     return parsers;
   };
 
-  generateTransactionTableParsers = () => {
+  generateTransactionTableParsers() {
     const bigIntegerFields = [
       transactionsTable.field.timestamp,
       transactionsTable.field.nextSigKeyIndex,
@@ -69,7 +69,7 @@ class DalParser {
     return parsers;
   };
 
-  generateBlocksTableParser = () => {
+  generateBlocksTableParser() {
     const bigIntegerFields = [
       blocksTable.field.height,
       blocksTable.field.timestamp,
@@ -101,14 +101,14 @@ class DalParser {
     return parsers;
   };
 
-  generateDelegatesTableParser = () => {
+  generateDelegatesTableParser() {
     const bigIntegerFields = [delegatesTable.field.updateHeight];
     return [
       (delegate) => numberParser(delegate, bigIntegerFields),
     ];
   };
 
-  generateBallotsTableParser = () => {
+  generateBallotsTableParser() {
     let parsers = [];
     if (this.knexClient.isSqliteClient()) {
       const booleanFields = [
@@ -121,7 +121,7 @@ class DalParser {
     return parsers;
   };
 
-  initializeParsers = () => {
+  initializeParsers() {
     this.accountTableParsers = this.generateAccountsTableParsers();
     this.transactionsTableParsers = this.generateTransactionTableParsers();
     this.blocksTableParsers = this.generateBlocksTableParser();
@@ -129,7 +129,7 @@ class DalParser {
     this.ballotsTableParsers = this.generateBallotsTableParser();
   };
 
-  getRecordedParsers = () => {
+  getRecordedParsers() {
     let recordedParsers = {
       [accountsTable.name]: (accounts) => applyParserForEach(accounts, ...this.accountTableParsers),
       [transactionsTable.name]: (transactions) => applyParserForEach(transactions, ...this.transactionsTableParsers),

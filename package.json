@@ -43,6 +43,6 @@
     "pg": "^8.5.1"
   },
   "optionalDependencies": {
-    "sqlite3": "https://github.com/sacOO7/node-sqlite3"
+    "sqlite3": "git+https://github.com/sacOO7/node-sqlite3.git"
   }
 }

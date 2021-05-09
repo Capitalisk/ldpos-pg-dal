@@ -50,7 +50,6 @@ const textToArray = (obj, keys) => {
   return obj;
 };
 
-
 // can be converted into two types of parsers -> From & To parser
 const accountsTableParser = (accounts) => {
   const bigIntegerFields = [

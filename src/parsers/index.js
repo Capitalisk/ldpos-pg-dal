@@ -19,6 +19,9 @@ class DalParser {
     generateAccountsTableParsers = () => {
         const bigIntegerFields = [
             accountsTable.field.lastTransactionTimestamp,
+            accountsTable.field.nextSigKeyIndex,
+            accountsTable.field.nextForgingKeyIndex,
+            accountsTable.field.nextMultisigKeyIndex,
             accountsTable.field.updateHeight,
         ];
         let parsers = [(account) => numberParser(account, bigIntegerFields)];

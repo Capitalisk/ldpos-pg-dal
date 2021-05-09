@@ -64,7 +64,6 @@ module.exports = {
       nextForgingKeyIndex: 'nextForgingKeyIndex',
       forgerSignature: 'forgerSignature',
       signatures: 'signatures',
-      forgingKeyChanges: 'forgingKeyChanges',
       synched: 'synched',
       numberOfTransactions: 'numberOfTransactions',
     },

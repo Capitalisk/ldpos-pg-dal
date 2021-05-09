@@ -11,14 +11,19 @@ const {
   isNullOrUndefinedOrEmpty,
 } = require('../src/utils');
 
-const TABLE_DOES_NOT_EXIST_ERROR_CODE = '42P01';
+const PG_TABLE_DOES_NOT_EXIST_ERROR_CODE = '42P01';
+const SQLITE_ERROR_CODE = 'SQLITE_ERROR';
+
+const KNEX_CLIENTS = {
+  POSTGRES_CLIENT: 'pg',
+  SQLITE_CLIENT: 'sqlite3',
+};
 
 class KnexClient {
   constructor(dalConfig) {
     dalConfig = dalConfig || {};
     this.logger = dalConfig.logger || console;
-
-    this.knex = knex({
+    this.knexConfig = {
       ...defaultConfig,
       connection: {
         ...defaultConfig.connection,
@@ -36,8 +41,8 @@ class KnexClient {
         ...defaultConfig.seeds,
         ...dalConfig.seeds,
       },
-    });
-
+    };
+    this.knex = knex(this.knexConfig);
     if (isLocal(environment)) {
       this.knex.on('query', (...args) => {
         if (process.env.KNEX_DEBUG) {
@@ -48,12 +53,16 @@ class KnexClient {
     this.tableNames = Object.entries(tableSchema).map(([_, value]) => value.name);
   }
 
+  isSqliteClient() {
+    return this.knexConfig.client === KNEX_CLIENTS.SQLITE_CLIENT;
+  }
+
   async migrateLatest() {
     return this.knex.migrate.latest();
   }
 
   async upsert(tableName, data, byColumns, columnsToRetain = []) {
-    const update = this.knex(tableName)
+    const update = this.knex.queryBuilder()
       .update(data)
       .toString();
 
@@ -101,7 +110,7 @@ class KnexClient {
   async findMatchingRecordsCount(tableName, matcher) {
     return Promise.resolve(
       this.buildEqualityMatcherQuery(tableName, matcher)
-        .count()
+        .count('*', {as : 'count'})
         .then((rows) => firstOrDefault(rows, {count: '0'})).then(({count}) => parseInt(count, 10))
     );
   }
@@ -127,13 +136,20 @@ class KnexClient {
   }
 
   async truncateAllExistingTables() {
+    const isUnknownError = (error) => {
+      if (this.isSqliteClient()) {
+        return error.code !== SQLITE_ERROR_CODE && !error.message.includes('SQLITE_ERROR: no such table');
+      }
+      return error.code !== PG_TABLE_DOES_NOT_EXIST_ERROR_CODE;
+    }
+
     return await Promise.all(
       this.tableNames.map(async (tableName) => {
         try {
           await this.truncate(tableName);
         } catch (error) {
           // Ignore table does not exist error.
-          if (error.code !== TABLE_DOES_NOT_EXIST_ERROR_CODE) {
+          if (isUnknownError(error)) {
             throw error;
           }
         }

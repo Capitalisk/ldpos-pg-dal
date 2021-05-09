@@ -14,8 +14,8 @@ exports.up = function (knex) {
       tbl.bigInteger(table.field.nextForgingKeyIndex).notNullable();
       tbl.string(table.field.forgerSignature, 32984).notNullable();
       tbl.text(table.field.signatures).notNullable();
-      tbl.integer(table.field.numberOfTransactions);
       tbl.boolean(table.field.synched).defaultTo(false);
+      tbl.integer(table.field.numberOfTransactions);
     }),
   )
 };

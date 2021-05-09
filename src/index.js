@@ -2,8 +2,7 @@ const crypto = require('crypto');
 const {firstOrNull, isEmpty, arrOrDefault} = require('./utils');
 const KnexClient = require('../knex/knex-client');
 const {ballotsTable, multisigMembershipsTable, blocksTable, accountsTable, delegatesTable, transactionsTable, storeTable} = require('../knex/ldpos-table-schema');
-const parsers = require('./parser');
-
+const DalParser = require('./parsers');
 const DEFAULT_NETWORK_SYMBOL = 'ldpos';
 const ID_BYTE_SIZE = 20;
 
@@ -12,6 +11,7 @@ class DAL {
     config = config || {};
     this.logger = config.logger || console;
     this.knexClient = new KnexClient(config);
+    this.parsers = new DalParser(this.knexClient).getRecordedParsers();
   }
 
   async init(options) {
@@ -536,11 +536,11 @@ class DAL {
 
   async getDelegatesByVoteWeight(offset, limit, order) {
     return this.delegatesRepo.buildBaseQuery()
-        .whereNot(delegatesTable.field.voteWeight, 0)
-        .orderBy(delegatesTable.field.voteWeight, order)
-        .orderBy(delegatesTable.field.address, 'asc')
-        .offset(offset)
-        .limit(limit);
+      .whereNot(delegatesTable.field.voteWeight, 0)
+      .orderBy(delegatesTable.field.voteWeight, order)
+      .orderBy(delegatesTable.field.address, 'asc')
+      .offset(offset)
+      .limit(limit);
   }
 
   simplifyBlock(signedBlock) {
@@ -549,7 +549,7 @@ class DAL {
   }
 
   repository(tableName, ...primaryKeys) {
-    const dataReadParser = parsers[tableName];
+    const dataReadParser = this.parsers[tableName];
     const basicRepositoryOps = (defaultMatcher) =>
       ({
         get: (equalityMatcher = defaultMatcher) => this.knexClient.findMatchingRecords(tableName, equalityMatcher, dataReadParser),
@@ -560,7 +560,7 @@ class DAL {
       });
 
     const generateFieldOps = (fieldName) => ({
-      [fieldName]: (value) => basicRepositoryOps({[fieldName]: value})
+      [fieldName]: (value) => basicRepositoryOps({[fieldName]: value}),
     });
 
     const primaryKeyOps = primaryKeys.reduce((o, key) => ({ ...o, ...generateFieldOps(key)}), {});
@@ -574,9 +574,7 @@ class DAL {
     };
   }
 
-  /*
-    Clears data from all tables, be careful while using this method
-   */
+  // Clears data from all tables, be careful while using this method
   async clearAllData() {
     await this.knexClient.truncateAllExistingTables();
   }

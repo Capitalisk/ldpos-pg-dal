@@ -11,7 +11,8 @@ const {
   isNullOrUndefinedOrEmpty,
 } = require('../src/utils');
 
-const TABLE_DOES_NOT_EXIST_ERROR_CODE = '42P01';
+const PG_TABLE_DOES_NOT_EXIST_ERROR_CODE = '42P01';
+const SQLITE_ERROR_CODE = 'SQLITE_ERROR'
 
 const KNEX_CLIENTS = {
   POSTGRES_CLIENT: 'pg',
@@ -133,13 +134,20 @@ class KnexClient {
   }
 
   async truncateAllExistingTables() {
+    const isUnknownError = (error) => {
+      if (this.isSqliteClient()) {
+        return error.code !== SQLITE_ERROR_CODE && !error.message.includes('SQLITE_ERROR: no such table')
+      }
+      return error.code !== PG_TABLE_DOES_NOT_EXIST_ERROR_CODE
+    }
+
     return await Promise.all(
       this.tableNames.map(async (tableName) => {
         try {
           await this.truncate(tableName);
         } catch (error) {
           // Ignore table does not exist error.
-          if (error.code !== TABLE_DOES_NOT_EXIST_ERROR_CODE) {
+          if (isUnknownError(error)) {
             throw error;
           }
         }

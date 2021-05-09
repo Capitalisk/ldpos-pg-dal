@@ -25,9 +25,6 @@ class DalParser {
 
         if (this.knexClient.isSqliteClient()) {
             const integerFields = [
-                accountsTable.field.nextForgingKeyIndex,
-                accountsTable.field.nextMultisigKeyIndex,
-                accountsTable.field.nextSigKeyIndex,
                 accountsTable.field.requiredSignatureCount,
             ];
             parsers.push((account) => numberParser(account, integerFields));

@@ -25,6 +25,7 @@ class KnexClient {
     this.logger = dalConfig.logger || console;
     this.knexConfig = {
       ...defaultConfig,
+      client: dalConfig.client || defaultConfig.client ,
       connection: {
         ...defaultConfig.connection,
         ...dalConfig.connection,

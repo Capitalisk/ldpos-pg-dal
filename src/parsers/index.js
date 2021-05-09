@@ -130,16 +130,16 @@ class DalParser {
     };
 
     getRecordedParsers = () => {
-        let appliedParsers = {
+        let recordedParsers = {
             [accountsTable.name]: (accounts) => applyParserForEach(accounts, ...this.accountTableParsers),
             [transactionsTable.name]: (transactions) => applyParserForEach(transactions, ...this.transactionsTableParsers),
             [blocksTable.name]: (blocks) => applyParserForEach(blocks, ...this.blocksTableParsers),
             [delegatesTable.name]: (delegates) => applyParserForEach(delegates, ...this.delegatesTableParsers),
         };
         if (this.ballotsTableParsers.length > 0) { // extra check for sqlite based parsers
-            appliedParsers[ballotsTable.name] = (ballots) => applyParserForEach(ballots, ...this.ballotsTableParsers);
+            recordedParsers[ballotsTable.name] = (ballots) => applyParserForEach(ballots, ...this.ballotsTableParsers);
         }
-        return appliedParsers;
+        return recordedParsers;
     };
 }
 

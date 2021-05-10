@@ -42,6 +42,7 @@ class KnexClient {
         ...defaultConfig.seeds,
         ...dalConfig.seeds,
       },
+      useNullAsDefault: true,
     };
     this.knex = knex(this.knexConfig);
     if (isLocal(environment)) {

@@ -24,9 +24,9 @@ class DAL {
       const msmRepo = this.repository(tableName, ...primaryKeys);
       return {
         ...msmRepo,
-        multsigAccountAddress : (address) => ({
+        multsigAccountAddress: (address) => ({
           ...msmRepo.multsigAccountAddress(address),
-          get : () => msmRepo.multsigAccountAddress(address).get().then(r => r. map(a => a[primaryKeys[1]]))
+          get: () => msmRepo.multsigAccountAddress(address).get().then(r => r. map(a => a[primaryKeys[1]])),
         })
       };
     })(multisigMembershipsTable.name, multisigMembershipsTable.field.multsigAccountAddress, multisigMembershipsTable.field.memberAddress);

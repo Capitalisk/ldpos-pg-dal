@@ -537,7 +537,6 @@ class DAL {
 
   async getDelegatesByVoteWeight(offset, limit, order) {
     return this.delegatesRepo.buildBaseQuery()
-      .whereNot(delegatesTable.field.voteWeight, 0)
       .orderBy(delegatesTable.field.voteWeight, order)
       .orderBy(delegatesTable.field.address, 'asc')
       .offset(offset)

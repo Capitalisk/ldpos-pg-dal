@@ -47,6 +47,7 @@ class DalParser {
 
     const base64Fields = [
       transactionsTable.field.signatures,
+      transactionsTable.field.error,
     ];
     const textArrayFields = [
       transactionsTable.field.memberAddresses,

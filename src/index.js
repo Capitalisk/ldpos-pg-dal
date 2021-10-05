@@ -5,6 +5,7 @@ const {ballotsTable, multisigMembershipsTable, blocksTable, accountsTable, deleg
 const DalParser = require('./parsers');
 const DEFAULT_NETWORK_SYMBOL = 'ldpos';
 const ID_BYTE_SIZE = 20;
+const DEFAULT_MAX_VOTES_PER_ACCOUNT = 5;
 
 class DAL {
   constructor(config) {
@@ -34,15 +35,17 @@ class DAL {
     this.storeRepo = this.repository(storeTable.name, storeTable.field.key);
     await this.knexClient.migrateLatest();
 
-    let {genesis} = options;
-    let {accounts} = genesis;
+    let { genesis, maxVotesPerAccount } = options;
+    let { accounts } = genesis;
+    this.maxVotesPerAccount = maxVotesPerAccount == null ? DEFAULT_MAX_VOTES_PER_ACCOUNT : maxVotesPerAccount;
+
     let multisigWalletList = genesis.multisigWallets || [];
     this.networkSymbol = genesis.networkSymbol || DEFAULT_NETWORK_SYMBOL;
 
     if (await this.knexClient.areAllTablesEmpty()) {
       await Promise.all(
         accounts.map(async (accountInfo) => {
-          let {votes, ...accountWithoutVotes} = accountInfo;
+          let { votes, ...accountWithoutVotes } = accountInfo;
           let account = {
             ...accountWithoutVotes,
             type: accountWithoutVotes.type || 'sig',
@@ -159,6 +162,31 @@ class DAL {
   async vote(ballot) {
     const { id, voterAddress, delegateAddress } = ballot;
     if (await this.ballotsRepo.id(id).notExist()) {
+      let hasDelegate = await this.hasDelegate(delegateAddress);
+      if (!hasDelegate) {
+        let error = new Error(
+          `Delegate ${delegateAddress} did not exist to vote for`
+        );
+        error.name = 'DelegateDidNotExistError'
+        error.type = 'InvalidActionError';
+        throw error;
+      }
+
+      let votes = await this.getAccountVotes(voterAddress);
+      let voteSet = new Set(votes);
+
+      if (voteSet.size >= this.maxVotesPerAccount) {
+        let error = new Error(
+          `Voter account ${
+            voterAddress
+          } has already voted for ${
+            voteSet.size
+          } delegates so it cannot vote for any more`
+        );
+        error.name = 'VoterExceededVoteCountError';
+        error.type = 'InvalidActionError';
+        throw error;
+      }
       const hasExistingVote = await this.hasVoteForDelegate(voterAddress, delegateAddress);
       if (hasExistingVote) {
         let error = new Error(
@@ -185,6 +213,16 @@ class DAL {
     const { id, voterAddress, delegateAddress } = ballot;
 
     if (await this.ballotsRepo.id(id).notExist()) {
+      let hasDelegate = await this.hasDelegate(delegateAddress);
+      if (!hasDelegate) {
+        let error = new Error(
+          `Delegate ${delegateAddress} did not exist to unvote`
+        );
+        error.name = 'DelegateDidNotExistError';
+        error.type = 'InvalidActionError';
+        throw error;
+      }
+
       const existingVotesMatcher = {
         [ballotsTable.field.active]: true,
         [ballotsTable.field.type]: 'vote',
@@ -221,7 +259,22 @@ class DAL {
   async registerMultisigWallet(multisigAddress, memberAddresses, requiredSignatureCount) {
     const multisigAccount = await this.getAccount(multisigAddress);
     for (let memberAddress of memberAddresses) {
-      let memberAccount = await this.getAccount(memberAddress);
+      let memberAccount;
+      try {
+        memberAccount = await this.getAccount(memberAddress);
+      } catch (error) {
+        if (error.name === 'AccountDidNotExistError') {
+          let error = new Error(
+            `Account ${
+              memberAddress
+            } did not exist so it could not be a member of a multisig wallet`
+          );
+          error.name = 'AccountDidNotExistError';
+          error.type = 'InvalidActionError';
+          throw error;
+        }
+        throw error;
+      }
       if (!memberAccount.multisigPublicKey) {
         let error = new Error(
           `Account ${memberAddress} was not registered for multisig so it cannot be a member of a multisig wallet`
@@ -300,6 +353,7 @@ class DAL {
     for (let txn of txns) {
       delete txn.indexInBlock;
       delete txn.blockId;
+      delete txn.error;
     }
     return txns;
   }
@@ -369,6 +423,7 @@ class DAL {
       error.type = 'InvalidActionError';
       throw error;
     }
+    block.transactions = await this.getSanitizedTransactionsFromBlock(id);
     return block;
   }
 
@@ -377,7 +432,15 @@ class DAL {
   }
 
   async getBlock(id) {
-    const block = await this.getSignedBlock(id);
+    const block = firstOrNull(await this.blocksRepo.id(id).get());
+    if (!block) {
+      let error = new Error(
+        `No block existed with ID ${id}`
+      );
+      error.name = 'BlockDidNotExistError';
+      error.type = 'InvalidActionError';
+      throw error;
+    }
     return this.simplifyBlock(block);
   }
 
@@ -403,6 +466,16 @@ class DAL {
       }
       if (transaction.signatures) {
         updatedTransaction.signatures = Buffer.from(JSON.stringify(transaction.signatures), 'utf8').toString('base64');
+      }
+      let error = transaction.error;
+      if (error) {
+        updatedTransaction.error = Buffer.from(
+          JSON.stringify({
+            name: error.name,
+            message: error.message
+          }),
+          'utf8'
+        ).toString('base64');
       }
       updatedTransaction[transactionsTable.field.blockId] = block.id;
       updatedTransaction[transactionsTable.field.indexInBlock] = index;

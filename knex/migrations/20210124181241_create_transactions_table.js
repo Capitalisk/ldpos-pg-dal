@@ -19,7 +19,6 @@ exports.up = function (knex) {
       tbl.text(table.field.signatures).nullable();
       tbl.string(table.field.blockId, 40).notNullable().index();
       tbl.integer(table.field.indexInBlock).notNullable();
-      // new nullable fields added
       tbl.string(table.field.delegateAddress, 50).nullable();
       tbl.string(table.field.newForgingPublicKey, 64).nullable();
       tbl.string(table.field.newNextForgingPublicKey, 64).nullable();

@@ -37,6 +37,7 @@ module.exports = {
       signatures: 'signatures',
       blockId: 'blockId',
       indexInBlock: 'indexInBlock',
+      error: 'error',
       delegateAddress: 'delegateAddress',
       newForgingPublicKey: 'newForgingPublicKey',
       newNextForgingPublicKey: 'newNextForgingPublicKey',

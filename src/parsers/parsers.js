@@ -4,16 +4,6 @@ const applyParserForEach = (objects, ...parsers) => {
   return objects.map(obj => parsers.reduce((parsedObj, parser) => parser(parsedObj), obj));
 };
 
-// boolean parser for sqlite
-const booleanParser = (obj, keys) => {
-  for (key of keys) {
-    if (key in obj && !isNullOrUndefined(obj[key])) {
-      obj[key] = obj[key] === "1"
-    }
-  }
-  return obj;
-};
-
 // responsible for parsing string into integer values
 const numberParser = (obj, keys) => {
   for (key of keys) {
@@ -61,7 +51,6 @@ const textToArray = (obj, keys) => {
 
 module.exports = {
   applyParserForEach,
-  booleanParser,
   numberParser,
   base64ObjParser,
   sanitizeTransaction,

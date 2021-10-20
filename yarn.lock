@@ -1256,16 +1256,6 @@
   "resolved" "https://registry.npmjs.org/sprintf-js/-/sprintf-js-1.0.3.tgz"
   "version" "1.0.3"
 
-"sqlite3@git+https://github.com/sacOO7/node-sqlite3.git":
-  "integrity" "sha512-6yWhWQjtidna/WKHzmatT+I56eAF/YsHbV/Axq2qE42xb9kzZz6sH+CkjHCChcz3Uy/NDbXH53nYFVl59/wxcQ=="
-  "resolved" "git+ssh://git@github.com/sacOO7/node-sqlite3.git#bc23c60a6dd304d719679b9177129f9f9d6b12aa"
-  "version" "5.0.2"
-  dependencies:
-    "@mapbox/node-pre-gyp" "^1.0.0"
-    "node-addon-api" "^3.0.0"
-  optionalDependencies:
-    "node-gyp" "7.x"
-
 "sshpk@^1.7.0":
   "integrity" "sha512-HXXqVUq7+pcKeLqqZj6mHFUMvXtOJt1uoUx09pFW6011inTMxqI8BA8PM95myrIyyKwdnzjdFjLiE6KBPVtJIg=="
   "resolved" "https://registry.npmjs.org/sshpk/-/sshpk-1.16.1.tgz"

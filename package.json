@@ -1,11 +1,10 @@
 {
-  "name": "ldpos-knex-dal",
+  "name": "ldpos-pg-dal",
   "version": "4.4.1",
   "description": "Knex Postgres Data Access Layer for LDPoS",
   "main": "src/index.js",
   "scripts": {
     "test:pg": "mocha test/integration --reporter spec --timeout 10000 --slow 10000 -r chai/register-expect",
-    "test:sqlite": "USE_SQLITE=true mocha test/integration --reporter spec --timeout 10000 --slow 10000 -r chai/register-expect",
     "migrate:make": "knex migrate:make",
     "migrate": "knex migrate:latest",
     "migrate:rollback": "knex migrate:rollback",
@@ -20,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Capitalisk/ldpos-knex-dal.git"
+    "url": "git+https://github.com/Capitalisk/ldpos-pg-dal.git"
   },
   "keywords": [
     "ldpos",
@@ -31,9 +30,9 @@
   "author": "Sachin Shinde",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Capitalisk/ldpos-knex-dal/issues"
+    "url": "https://github.com/Capitalisk/ldpos-pg-dal/issues"
   },
-  "homepage": "https://github.com/Capitalisk/ldpos-knex-dal#readme",
+  "homepage": "https://github.com/Capitalisk/ldpos-pg-dal#readme",
   "devDependencies": {
     "chai": "^4.2.0",
     "mocha": "^8.2.1"
@@ -41,8 +40,5 @@
   "dependencies": {
     "knex": "^0.95.11",
     "pg": "^8.5.1"
-  },
-  "optionalDependencies": {
-    "sqlite3": "git+https://github.com/sacOO7/node-sqlite3.git"
   }
 }

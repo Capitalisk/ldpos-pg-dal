@@ -12,11 +12,9 @@ const {
 } = require('../src/utils');
 
 const PG_TABLE_DOES_NOT_EXIST_ERROR_CODE = '42P01';
-const SQLITE_ERROR_CODE = 'SQLITE_ERROR';
 
 const KNEX_CLIENTS = {
   POSTGRES_CLIENT: 'pg',
-  SQLITE_CLIENT: 'sqlite3',
 };
 
 class KnexClient {
@@ -53,10 +51,6 @@ class KnexClient {
       });
     }
     this.tableNames = Object.entries(tableSchema).map(([_, value]) => value.name);
-  }
-
-  isSqliteClient() {
-    return this.knexConfig.client === KNEX_CLIENTS.SQLITE_CLIENT;
   }
 
   async migrateLatest() {
@@ -139,9 +133,6 @@ class KnexClient {
 
   async truncateAllExistingTables() {
     const isUnknownError = (error) => {
-      if (this.isSqliteClient()) {
-        return error.code !== SQLITE_ERROR_CODE && !error.message.includes('SQLITE_ERROR: no such table');
-      }
       return error.code !== PG_TABLE_DOES_NOT_EXIST_ERROR_CODE;
     }
 

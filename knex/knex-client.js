@@ -58,17 +58,17 @@ class KnexClient {
   }
 
   async upsert(tableName, data, byColumns, columnsToRetain = []) {
-    const update = this.knex.queryBuilder()
+    let update = this.knex.queryBuilder()
       .update(data)
       .toString();
 
-    const insert = this.knex(tableName)
+    let insert = this.knex(tableName)
       .insert(data)
       .toString();
 
-    const keepValues = columnsToRetain.map((c) => `"${c}"=${tableName}."${c}"`).join(',');
+    let keepValues = columnsToRetain.map((c) => `"${c}"=${tableName}."${c}"`).join(',');
 
-    const conflictColumns = byColumns.map((c) => `"${c.toString()}"`).join(',');
+    let conflictColumns = byColumns.map((c) => `"${c.toString()}"`).join(',');
 
     let insertOrUpdateQuery = `${insert} ON CONFLICT(${conflictColumns}) DO ${update}`;
     insertOrUpdateQuery = !isNullOrUndefinedOrEmpty(keepValues, true) ? `${insertOrUpdateQuery}, ${keepValues}` : insertOrUpdateQuery;
@@ -87,8 +87,8 @@ class KnexClient {
   }
 
   buildEqualityMatcherQuery(tableName, matcher, parser) {
-    const baseQuery = this.knex(tableName).select();
-    const query = Object.entries(matcher).reduce((query, [key, value]) => query.where(key, value), baseQuery);
+    let baseQuery = this.knex(tableName).select();
+    let query = Object.entries(matcher).reduce((query, [key, value]) => query.where(key, value), baseQuery);
     if (isNullOrUndefined(parser)) {
       return query;
     }
@@ -132,7 +132,7 @@ class KnexClient {
   }
 
   async truncateAllExistingTables() {
-    const isUnknownError = (error) => {
+    let isUnknownError = (error) => {
       return error.code !== PG_TABLE_DOES_NOT_EXIST_ERROR_CODE;
     }
 

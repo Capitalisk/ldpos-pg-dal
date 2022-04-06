@@ -1,40 +1,40 @@
-const objectType = 'object';
-const functionType = 'function';
+let objectType = 'object';
+let functionType = 'function';
 
-const firstOrDefault = (array, defaultValue) => (array.length > 0 ? firstValue(array) : defaultValue);
+let firstOrDefault = (array, defaultValue) => (array.length > 0 ? firstValue(array) : defaultValue);
 
-const firstOrNull = (arr) => firstOrDefault(arr, null);
+let firstOrNull = (arr) => firstOrDefault(arr, null);
 
-const arrOrDefault = (arr, defaultValue) => isEmptyArray(arr) ? defaultValue : arr;
+let arrOrDefault = (arr, defaultValue) => isEmptyArray(arr) ? defaultValue : arr;
 
-const arrOrFirstOrNull = (arr) => arr.length > 1 ? arr : firstOrNull(arr);
+let arrOrFirstOrNull = (arr) => arr.length > 1 ? arr : firstOrNull(arr);
 
-const firstValue = (array) => array[0];
+let firstValue = (array) => array[0];
 
-const isNullOrUndefinedOrEmpty = (obj , checkEmptyString = false) =>
+let isNullOrUndefinedOrEmpty = (obj , checkEmptyString = false) =>
   isNullOrUndefined(obj) || isEmpty(obj) || (checkEmptyString && typeof obj === 'string' && isEmptyString(obj));
 
-const isNullOrUndefined = (obj) => obj == null || obj === undefined;
+let isNullOrUndefined = (obj) => obj == null || obj === undefined;
 
-const isEmptyObjOrFn = (objOrfn) => {
+let isEmptyObjOrFn = (objOrfn) => {
   return typeof objOrfn === objectType && typeof objOrfn !== functionType ? isEmptyObject(objOrfn) : false;
 };
 
-const isEmpty = (objOrfnOrArr) => Array.isArray(objOrfnOrArr) ? isEmptyArray(objOrfnOrArr) : isEmptyObjOrFn(objOrfnOrArr);
+let isEmpty = (objOrfnOrArr) => Array.isArray(objOrfnOrArr) ? isEmptyArray(objOrfnOrArr) : isEmptyObjOrFn(objOrfnOrArr);
 
-const isEmptyObject = (obj) => eq(Object.keys(obj).length, 0);
+let isEmptyObject = (obj) => eq(Object.keys(obj).length, 0);
 
-const isEmptyArray = (arr) => arr.length === 0;
+let isEmptyArray = (arr) => arr.length === 0;
 
-const eq = (a, b) => a === b;
+let eq = (a, b) => a === b;
 
-const isEmptyString = (stringToCheck, ignoreSpaces = true) => (ignoreSpaces ? stringToCheck.trim() : stringToCheck) === '';
+let isEmptyString = (stringToCheck, ignoreSpaces = true) => (ignoreSpaces ? stringToCheck.trim() : stringToCheck) === '';
 
-const isLocal = (env) => env === 'development';
+let isLocal = (env) => env === 'development';
 
-const run = (runnable, ...collection) => Promise.all(collection.map(runnable));
+let run = (runnable, ...collection) => Promise.all(collection.map(runnable));
 
-const excludeNullPropertiesFromArr = (arr) => {
+let excludeNullPropertiesFromArr = (arr) => {
   return arr.map(
     obj => Object.entries(obj)
       .reduce(
@@ -46,7 +46,7 @@ const excludeNullPropertiesFromArr = (arr) => {
   );
 }
 
-const excludePropertyFromArr = (arr, propertyName) => {
+let excludePropertyFromArr = (arr, propertyName) => {
   return arr.map(
     obj => Object.entries(obj)
       .reduce(
@@ -58,7 +58,7 @@ const excludePropertyFromArr = (arr, propertyName) => {
   );
 }
 
-const sort = (arr, key) => arr.sort((o1, o2) => {
+let sort = (arr, key) => arr.sort((o1, o2) => {
   return o1[key].localeCompare(o2[key]);
 });
 

@@ -2,7 +2,7 @@ module.exports = {
   accountsTable: {
     name: 'accounts',
     field: {
-      address : 'address',
+      address: 'address',
       type: 'type',
       balance: 'balance',
       forgingPublicKey: 'forgingPublicKey',

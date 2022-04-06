@@ -16,7 +16,7 @@ class DalParser {
   }
 
   generateAccountsTableParsers() {
-    const bigIntegerFields = [
+    let bigIntegerFields = [
       accountsTable.field.lastTransactionTimestamp,
       accountsTable.field.nextSigKeyIndex,
       accountsTable.field.nextForgingKeyIndex,
@@ -29,7 +29,7 @@ class DalParser {
   };
 
   generateTransactionTableParsers() {
-    const bigIntegerFields = [
+    let bigIntegerFields = [
       transactionsTable.field.timestamp,
       transactionsTable.field.nextSigKeyIndex,
       transactionsTable.field.newNextForgingKeyIndex,
@@ -37,11 +37,11 @@ class DalParser {
       transactionsTable.field.newNextSigKeyIndex,
     ];
 
-    const base64Fields = [
+    let base64Fields = [
       transactionsTable.field.signatures,
       transactionsTable.field.error,
     ];
-    const textArrayFields = [
+    let textArrayFields = [
       transactionsTable.field.memberAddresses,
     ];
 
@@ -56,13 +56,13 @@ class DalParser {
   };
 
   generateBlocksTableParser() {
-    const bigIntegerFields = [
+    let bigIntegerFields = [
       blocksTable.field.height,
       blocksTable.field.timestamp,
       blocksTable.field.nextForgingKeyIndex,
     ];
 
-    const base64Fields = [
+    let base64Fields = [
       blocksTable.field.signatures,
     ];
 
@@ -76,7 +76,7 @@ class DalParser {
   };
 
   generateDelegatesTableParser() {
-    const bigIntegerFields = [delegatesTable.field.updateHeight];
+    let bigIntegerFields = [delegatesTable.field.updateHeight];
     return [
       (delegate) => numberParser(delegate, bigIntegerFields),
     ];

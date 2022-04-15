@@ -84,6 +84,7 @@ module.exports = {
     field: {
       address: 'address',
       voteWeight: 'voteWeight',
+      forgingRewards: 'forgingRewards',
       updateHeight: 'updateHeight',
     },
   },

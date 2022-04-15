@@ -15,13 +15,6 @@ exports.up = async function (knex) {
 
   while (hasBlocks) {
     let toHeight = currentBlockHeight + BLOCKS_BATCH_SIZE;
-    console.log(
-      `Forging rewards migration: Processing blocks from height ${
-        currentBlockHeight
-      } to ${
-        toHeight
-      }...`
-    );
     let blocks = await knex(blocksTable.name)
       .select()
       .whereBetween(blocksTable.field.height, [currentBlockHeight, toHeight]);
@@ -46,11 +39,16 @@ exports.up = async function (knex) {
     }
     hasBlocks = !!blocks.length;
     if (hasBlocks) {
+      console.log(
+        `Forging rewards migration: Processed blocks from height ${
+          currentBlockHeight
+        } to ${
+          toHeight
+        }.`
+      );
       currentBlockHeight = parseInt(blocks[blocks.length - 1].height) + 1;
     }
   }
-
-  console.log('Forging rewards migration: Updating delegate forging rewards...');
 
   let delegateRewardEntries = Object.entries(delegateForgingRewards);
   for (let [delegateAddress, forgingRewards] of delegateRewardEntries) {
@@ -58,8 +56,6 @@ exports.up = async function (knex) {
       .where(delegatesTable.field.address, delegateAddress)
       .update(delegatesTable.field.forgingRewards, forgingRewards.toString());
   }
-
-  console.log('Forging rewards migration: Done updating delegate forging rewards.');
 };
 
 exports.down = function (knex) {

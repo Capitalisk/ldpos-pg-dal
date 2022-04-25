@@ -56,6 +56,7 @@ class DAL {
             await this.upsertDelegate({
               address: account.address,
               voteWeight: '0',
+              forgingRewards: '0',
             });
           }
         })
@@ -73,7 +74,7 @@ class DAL {
           let updatedVoteWeight = BigInt(delegate.voteWeight) + BigInt(accountInfo.balance);
           await this.upsertDelegate({
             address: delegateAddress,
-            voteWeight: updatedVoteWeight.toString()
+            voteWeight: updatedVoteWeight.toString(),
           });
         }
       }

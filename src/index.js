@@ -68,7 +68,7 @@ class DAL {
           await this.vote({
             id: crypto.randomBytes(ID_BYTE_SIZE).toString('hex'),
             voterAddress: accountInfo.address,
-            delegateAddress
+            delegateAddress,
           });
           let delegate = await this.getDelegate(delegateAddress);
           let updatedVoteWeight = BigInt(delegate.voteWeight) + BigInt(accountInfo.balance);

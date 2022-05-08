@@ -57,24 +57,18 @@ class KnexClient {
     return this.knex.migrate.latest();
   }
 
-  async upsert(tableName, data, byColumns, columnsToRetain = []) {
-    let update = this.knex.queryBuilder()
-      .update(data)
-      .toString();
-
+  async upsert(tableName, data, byColumns) {
     let insert = this.knex(tableName)
       .insert(data)
       .toString();
 
-    let keepValues = columnsToRetain.map((c) => `"${c}"=${tableName}."${c}"`).join(',');
+    let update = this.knex.queryBuilder()
+      .update(data)
+      .toString();
 
     let conflictColumns = byColumns.map((c) => `"${c.toString()}"`).join(',');
 
-    let insertOrUpdateQuery = `${insert} ON CONFLICT(${conflictColumns}) DO ${update}`;
-    insertOrUpdateQuery = !isNullOrUndefinedOrEmpty(keepValues, true) ? `${insertOrUpdateQuery}, ${keepValues}` : insertOrUpdateQuery;
-    insertOrUpdateQuery = insertOrUpdateQuery.replace(`update "${tableName}"`, 'update');
-    insertOrUpdateQuery = insertOrUpdateQuery.replace(`"${tableName}"`, tableName);
-    return Promise.resolve(this.knex.raw(insertOrUpdateQuery));
+    return this.knex.raw(`${insert} ON CONFLICT(${conflictColumns}) DO ${update}`);
   }
 
   async areAllTablesEmpty() {
@@ -83,7 +77,7 @@ class KnexClient {
   }
 
   async insert(tableName, data) {
-    return Promise.resolve(this.knex(tableName).insert(data));
+    return this.knex(tableName).insert(data);
   }
 
   buildEqualityMatcherQuery(tableName, matcher, parser) {
@@ -96,39 +90,37 @@ class KnexClient {
   }
 
   async findMatchingRecords(tableName, matcher, parser) {
-    return Promise.resolve(this.buildEqualityMatcherQuery(tableName, matcher, parser));
+    return this.buildEqualityMatcherQuery(tableName, matcher, parser);
   }
 
   async updateMatchingRecords(tableName, matcher, updatedData) {
-    return Promise.resolve(this.buildEqualityMatcherQuery(tableName, matcher).update(updatedData));
+    return this.buildEqualityMatcherQuery(tableName, matcher).update(updatedData);
   }
 
   async findMatchingRecordsCount(tableName, matcher) {
-    return Promise.resolve(
-      this.buildEqualityMatcherQuery(tableName, matcher)
-        .count('*', {as : 'count'})
-        .then((rows) => firstOrDefault(rows, {count: '0'})).then(({count}) => parseInt(count, 10))
-    );
+    return this.buildEqualityMatcherQuery(tableName, matcher)
+      .count('*', {as : 'count'})
+      .then((rows) => firstOrDefault(rows, {count: '0'})).then(({count}) => parseInt(count, 10));
   }
 
   async noMatchFound(tableName, matcher) {
     return this.findMatchingRecordsCount(tableName, matcher).then((cnt) => cnt === 0);
-  };
+  }
 
   async matchFound(tableName, matcher) {
     return this.noMatchFound(tableName, matcher).then(noMatchFound => !noMatchFound);
-  };
+  }
 
   async isTableEmpty(tableName) {
     return this.noMatchFound(tableName, {});
-  };
+  }
 
   async truncate(tableName) {
-    return Promise.resolve(this.knex(tableName).truncate());
+    return this.knex(tableName).truncate();
   }
 
   async truncateAllTables() {
-    return await Promise.all(this.tableNames.map(tableName => this.truncate(tableName)));
+    return Promise.all(this.tableNames.map(tableName => this.truncate(tableName)));
   }
 
   async truncateAllExistingTables() {
@@ -136,7 +128,7 @@ class KnexClient {
       return error.code !== PG_TABLE_DOES_NOT_EXIST_ERROR_CODE;
     }
 
-    return await Promise.all(
+    return Promise.all(
       this.tableNames.map(async (tableName) => {
         try {
           await this.truncate(tableName);

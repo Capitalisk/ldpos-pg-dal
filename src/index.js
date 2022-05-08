@@ -631,14 +631,15 @@ class DAL {
 
   repository(tableName, ...primaryKeys) {
     let dataReadParser = this.parsers[tableName];
-    let basicRepositoryOps = (defaultMatcher) =>
-      ({
+    let basicRepositoryOps = (defaultMatcher) => (
+      {
         get: (equalityMatcher = defaultMatcher) => this.knexClient.findMatchingRecords(tableName, equalityMatcher, dataReadParser),
         update: (updatedData, equalityMatcher = defaultMatcher) => this.knexClient.updateMatchingRecords(tableName, equalityMatcher, updatedData),
         exists: (equalityMatcher = defaultMatcher) => this.knexClient.matchFound(tableName, equalityMatcher),
         notExist: (equalityMatcher = defaultMatcher) => this.knexClient.noMatchFound(tableName, equalityMatcher),
         count: (equalityMatcher = defaultMatcher) => this.knexClient.findMatchingRecordsCount(tableName, equalityMatcher),
-      });
+      }
+    );
 
     let generateFieldOps = (fieldName) => ({
       [fieldName]: (value) => basicRepositoryOps({[fieldName]: value}),
@@ -647,11 +648,11 @@ class DAL {
     let primaryKeyOps = primaryKeys.reduce((o, key) => ({...o, ...generateFieldOps(key)}), {});
 
     return {
-      insert: (data) => this.knexClient.insert(tableName, data),
-      upsert: (data, ...byColumns) => this.knexClient.upsert(tableName, data, arrOrDefault(byColumns, primaryKeys)),
       ...basicRepositoryOps({}),
       ...primaryKeyOps,
-      buildBaseQuery: (equalityMatcher = {}) => this.knexClient.buildEqualityMatcherQuery(tableName, equalityMatcher, dataReadParser)
+      insert: (data) => this.knexClient.insert(tableName, data),
+      upsert: (data, ...byColumns) => this.knexClient.upsert(tableName, data, arrOrDefault(byColumns, primaryKeys)),
+      buildBaseQuery: (equalityMatcher = {}) => this.knexClient.buildEqualityMatcherQuery(tableName, equalityMatcher, dataReadParser),
     };
   }
 

@@ -71,11 +71,6 @@ class KnexClient {
     return this.knex.raw(`${insert} ON CONFLICT(${conflictColumns}) DO ${update}`);
   }
 
-  async areAllTablesEmpty() {
-    return Promise.all(this.tableNames.map(tableName => this.isTableEmpty(tableName)))
-      .then((emptyTables) => !emptyTables.includes(false));
-  }
-
   async insert(tableName, data) {
     return this.knex(tableName).insert(data);
   }
@@ -109,10 +104,6 @@ class KnexClient {
 
   async matchFound(tableName, matcher) {
     return this.noMatchFound(tableName, matcher).then(noMatchFound => !noMatchFound);
-  }
-
-  async isTableEmpty(tableName) {
-    return this.noMatchFound(tableName, {});
   }
 
   async truncate(tableName) {

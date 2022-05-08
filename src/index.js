@@ -6,6 +6,8 @@ const DalParser = require('./parsers');
 const DEFAULT_NETWORK_SYMBOL = 'ldpos';
 const ID_BYTE_SIZE = 20;
 const DEFAULT_MAX_VOTES_PER_ACCOUNT = 5;
+const DATABASE_INIT_KEY = 'databaseInitialized';
+const DATABASE_INIT_VALUE = 'true';
 
 class DAL {
   constructor(config) {
@@ -42,7 +44,9 @@ class DAL {
     let multisigWalletList = genesis.multisigWallets || [];
     this.networkSymbol = genesis.networkSymbol || DEFAULT_NETWORK_SYMBOL;
 
-    if (await this.knexClient.areAllTablesEmpty()) {
+    let wasDatabaseInitialized = await this.loadItem(DATABASE_INIT_KEY);
+
+    if (wasDatabaseInitialized !== DATABASE_INIT_VALUE) {
       await Promise.all(
         accounts.map(async (accountInfo) => {
           let {votes, ...accountWithoutVotes} = accountInfo;
@@ -88,6 +92,8 @@ class DAL {
           );
         })
       );
+
+      await this.saveItem(DATABASE_INIT_KEY, DATABASE_INIT_VALUE);
     }
   }
 

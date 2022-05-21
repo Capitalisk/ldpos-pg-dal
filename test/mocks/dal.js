@@ -505,6 +505,28 @@ class DAL {
     return {...delegate};
   }
 
+  async getDelegateVoters(walletAddress, offset, limit, order) {
+    let delegate = this.delegates[walletAddress];
+    if (!delegate) {
+      let error = new Error(`Delegate ${walletAddress} did not exist`);
+      error.name = 'DelegateDidNotExistError';
+      error.type = 'InvalidActionError';
+      throw error;
+    }
+    let voterSet = new Set();
+    let voteList = Object.values(this.ballots).filter(
+      currentBallot => (
+        currentBallot.active &&
+        currentBallot.type === 'vote' &&
+        currentBallot.delegateAddress === walletAddress
+      )
+    );
+    for (let vote of voteList) {
+      voterSet.add(vote.voterAddress);
+    }
+    return [...voterSet];
+  }
+
   async getDelegatesByVoteWeight(offset, limit, order) {
     return this.sortByProperty(
       Object.values(this.delegates).filter(delegate => delegate.voteWeight !== '0'),

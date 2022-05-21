@@ -622,6 +622,24 @@ class DAL {
     return {...delegate};
   }
 
+  async getDelegateVoters(walletAddress, offset, limit, order) {
+    let delegate = firstOrNull(await this.delegatesRepo.address(walletAddress).get());
+    if (!delegate) {
+      let error = new Error(`Delegate ${walletAddress} did not exist`);
+      error.name = 'DelegateDidNotExistError';
+      error.type = 'InvalidActionError';
+      throw error;
+    }
+    let ballots = await this.ballotsRepo.buildBaseQuery()
+      .where(ballotsTable.field.active, true)
+      .andWhere(ballotsTable.field.type, 'vote')
+      .andWhere(ballotsTable.field.delegateAddress, walletAddress)
+      .orderBy(ballotsTable.field.voterAddress, order)
+      .offset(offset)
+      .limit(limit);
+    return ballots.map(ballot => ballot[ballotsTable.field.voterAddress]);
+  }
+
   async getDelegatesByVoteWeight(offset, limit, order) {
     return this.delegatesRepo.buildBaseQuery()
       .orderBy(delegatesTable.field.voteWeight, order)

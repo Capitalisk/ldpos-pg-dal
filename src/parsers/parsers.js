@@ -56,4 +56,4 @@ module.exports = {
   sanitizeTransaction,
   removePrivateBlockField,
   textToArray,
-}
+};

@@ -35,7 +35,7 @@
   "homepage": "https://github.com/Capitalisk/ldpos-pg-dal#readme",
   "devDependencies": {
     "chai": "^4.2.0",
-    "mocha": "^8.2.1"
+    "mocha": "^11.7.5"
   },
   "dependencies": {
     "knex": "^2.5.1",

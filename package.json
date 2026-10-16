@@ -4,7 +4,7 @@
   "description": "Knex Postgres Data Access Layer for LDPoS",
   "main": "src/index.js",
   "scripts": {
-    "test:pg": "mocha test/integration --reporter spec --timeout 10000 --slow 10000 -r chai/register-expect",
+    "test:pg": "mocha test/integration --reporter spec --timeout 10000 --slow 10000 -r chai/register-expect.js",
     "migrate:make": "knex migrate:make",
     "migrate": "knex migrate:latest",
     "migrate:rollback": "knex migrate:rollback",
@@ -34,8 +34,8 @@
   },
   "homepage": "https://github.com/Capitalisk/ldpos-pg-dal#readme",
   "devDependencies": {
-    "chai": "^4.2.0",
-    "mocha": "^11.7.5"
+    "chai": "^4.5.0",
+    "mocha": "^12.0.3"
   },
   "dependencies": {
     "knex": "^2.5.1",

@@ -58,17 +58,10 @@ class KnexClient {
   }
 
   async upsert(tableName, data, byColumns) {
-    let insert = this.knex(tableName)
+    return this.knex(tableName)
       .insert(data)
-      .toString();
-
-    let update = this.knex.queryBuilder()
-      .update(data)
-      .toString();
-
-    let conflictColumns = byColumns.map((c) => `"${c.toString()}"`).join(',');
-
-    return this.knex.raw(`${insert} ON CONFLICT(${conflictColumns}) DO ${update}`);
+      .onConflict(byColumns)
+      .merge();
   }
 
   async insert(tableName, data) {
